@@ -11,7 +11,10 @@ require('./lib/passport')(passport);
 const PORT = process.env.PORT || 8888;
 
 // Routers here 
-// const user_router = require('./routers/user_router')
+const user_router = require('./routers/user_router')
+const store_router = require('./routers/store_router')
+const service_router = require('./routers/service_router')
+const appointment_router = require('./routers/appointment_router')
 
 // Global middleware here
 
@@ -27,6 +30,10 @@ app.use(helmet())
 
 // Middleware routes
 // app.use('/users', user.router)
+app.use('/store', store_router)
+app.use('/user', user_router)
+app.use('/service', service_router)
+app.use('/appointment', appointment_router)
 
 
 app.get('*', (req, res) => {

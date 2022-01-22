@@ -1,5 +1,7 @@
 const mongoose = require('mongoose')
 const validator = require('validator')
+const bcrypt = require('bcryptjs')
+const Appointment = require('./appointment_model')
 
 const userSchema = new mongoose.Schema(
   {
@@ -48,23 +50,36 @@ const userSchema = new mongoose.Schema(
         }
       }
     },
+    store: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: 'Store'
+    },
+    appointments: [{type: mongoose.Schema.Types.ObjectId, ref: 'Appointment'}],
+    services: [{type: mongoose.Schema.Types.ObjectId, ref: 'Service'}],
     picture: {
       type: Buffer
+    },
+    owner: {
+      type: Boolean
+    },
+    admin: {
+      type: Boolean
     }
   }
 )
 
-userSchema.virtual('appointments', {
-  ref: "Appointment",
-  localField: '_id',
-  foreignField: 'Stylist'
-})
+// userSchema.virtual('appointments', {
+//   ref: "Appointment",
+//   localField: '_id',
+//   foreignField: 'user'
+// })
 
-userSchema.virtual('store', {
-  ref: "Store",
-  localField: '_id',
-  foreignField: 'Stylist'
-})
+// userSchema.virtual('store', {
+//   ref: "Store",
+//   localField: '_id',
+//   foreignField: 'user'
+// })
 
 
 userSchema.methods.toJSON = function () {
@@ -77,3 +92,33 @@ userSchema.methods.toJSON = function () {
   
   return userObject;
 }
+
+userSchema.statics.findByCredentials = async (username, password) => {
+  const user = await User.findOne({username})
+  if (!user) {
+    throw new Error('Unable to login')
+  }
+  const isMatch = await bcrypt.compare(password, user.password)
+  if (!isMatch){
+    throw new Error('Unable to login')
+  }
+  return user
+}
+
+userSchema.pre('save', async function (next) {
+  const user = this;
+  if (userSchema.isModified('password')) {
+    user.password = await bcrypt.hash(user.password, 8)
+  }
+  next()
+})
+
+userSchema.pre('remove', async function (next) {
+  const user = this;
+  await Appointment.deleteMany({user: User._id})
+  next()
+})
+
+const user = mongoose.model('user', userSchema)
+
+module.exports = user;

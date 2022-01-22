@@ -1,9 +1,13 @@
 const mongoose = require("mongoose");
 
-
 const storeSchema = new mongoose.Schema(
   {
     storeName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    storeType: {
       type: String,
       required: true,
       trim: true,
@@ -23,19 +27,40 @@ const storeSchema = new mongoose.Schema(
       required: true,
       trim: true,
     }, 
-    hours: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    description: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+    hours: [
+      {
+        day: String,
+        open: String,
+        close: String,
+      }
+    ],
     picture: {
       type: Buffer,
-      required: true,
-    }
+    },
+    employees: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
+    owner: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
   }
 )
+
+storeSchema.virtual('users', {
+  ref: "User",
+  localField: '_id',
+  foreignField: 'store'
+})
+
+storeSchema.virtual('appointments', {
+  ref: 'Appointment',
+  localField: '_id',
+  foreignField: 'store'
+})
+
+storeSchema.methods.toJSON = function () {
+  const store = this;
+  const storeObject = store.toObject()
+
+  return storeObject;
+}
+
+const Store = mongoose.model('Store', storeSchema)
+
+module.exports = Store;

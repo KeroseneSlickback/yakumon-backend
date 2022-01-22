@@ -1,0 +1,48 @@
+- Owner can sign up on the website
+  - Provides store name, store description, locaion, location link, hours broken down by day, and a picture 
+  - Backend saves this
+
+- Stylists sign up on the website
+  - Provide first and last name, title, username, email, password, store
+    - Then are asked to create their services 
+
+- Services consist of service name, time span in milliseconds collecting into 30min sessions, and price 
+
+- Timeslot are created when either they're created directly in terms of breaks, or in appointments
+
+Routes:
+
+Store:
+
+- Create store upon login 
+- Read store details, calls users and appointments as well - sorting available 
+- Update store details (auth with owner)
+- Delete store, but spares users, appointments, and services (user deletes those) (auth with owner)
+
+User:
+
+- Create user profile 
+- Read user details and available appointments 
+- Update user details (auth)
+- Delete user profile - deletes appointments (which delete timeslots), and services
+
+Services: 
+
+- Create services directed from User (auth)
+- Read services (more so from User's record) (auth)
+- Update services (auth)
+- Delete services (auth)
+
+Appointments: 
+
+- Create appointment
+- Read appointment
+- Update appointment (auth)
+- Delete appointment (auth)
+
+Timeslots: 
+
+- Create
+- Read 
+- Update 
+- Delete from 
