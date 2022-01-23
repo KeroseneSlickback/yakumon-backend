@@ -19,8 +19,6 @@ const upload = multer({
   }
 })
 
-// Store Post
-
 router.post('/', [auth], upload.single('picture'), store_controller.store_create)
 
 router.get('/', store_controller.store_get)

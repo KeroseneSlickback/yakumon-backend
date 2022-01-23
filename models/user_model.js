@@ -17,12 +17,16 @@ const userSchema = new mongoose.Schema(
     },
     title: {
       type: String,
-      required: true,
       trim: true,
     },
     username: {
       type: String,
       unique: true,
+      required: true,
+      trim: true,
+    },
+    phoneNumber: {
+      type: String,
       required: true,
       trim: true,
     },
@@ -64,6 +68,9 @@ const userSchema = new mongoose.Schema(
       type: Boolean
     },
     admin: {
+      type: Boolean
+    },
+    customer: {
       type: Boolean
     }
   }

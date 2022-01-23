@@ -29,7 +29,6 @@ User:
 Services: 
 
 - Create services directed from User (auth)
-- Read services (more so from User's record) (auth)
 - Update services (auth)
 - Delete services (auth)
 

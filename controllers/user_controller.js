@@ -31,6 +31,7 @@ exports.user_create = [
   body('lastName', 'Last name').trim(),
   body('title', 'User title').trim(),
   body('store', 'Store link').trim(),
+  body('phoneNumber', 'Phone Number').trim(),
   async (req, res, next) => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
@@ -41,7 +42,6 @@ exports.user_create = [
     const newUser = new User({
       ...req.body,
       picture: buffer,
-      owner: false,
       admin: false,
     });
 
