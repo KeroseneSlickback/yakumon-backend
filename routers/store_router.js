@@ -19,7 +19,7 @@ const upload = multer({
   }
 })
 
-router.post('/', [auth], upload.single('picture'), store_controller.store_create)
+router.post('/', [auth, owner], upload.single('picture'), store_controller.store_create)
 
 router.get('/', store_controller.store_get)
 

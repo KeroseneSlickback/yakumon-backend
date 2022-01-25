@@ -38,7 +38,7 @@ const storeSchema = new mongoose.Schema(
       type: Buffer,
     },
     employees: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
-    owner: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
+    owners: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
   }
 )
 

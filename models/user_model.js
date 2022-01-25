@@ -2,6 +2,8 @@ const mongoose = require('mongoose')
 const validator = require('validator')
 const bcrypt = require('bcryptjs')
 const Appointment = require('./appointment_model')
+const Service = require('./service_model')
+const Timeslot = require('./timeslot_model')
 
 const userSchema = new mongoose.Schema(
   {
@@ -56,7 +58,6 @@ const userSchema = new mongoose.Schema(
     },
     store: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
       ref: 'Store'
     },
     appointments: [{type: mongoose.Schema.Types.ObjectId, ref: 'Appointment'}],
@@ -70,7 +71,7 @@ const userSchema = new mongoose.Schema(
     admin: {
       type: Boolean
     },
-    customer: {
+    employee: {
       type: Boolean
     }
   }
@@ -122,10 +123,13 @@ userSchema.pre('save', async function (next) {
 
 userSchema.pre('remove', async function (next) {
   const user = this;
-  await Appointment.deleteMany({user: User._id})
+  await Appointment.deleteMany({owner: User._id})
+  await Appointment.deleteMany({employee: User._id})
+  await Service.deleteMany({owner: User._id})
+  await Timeslot.deleteMany({owner: User._id})
   next()
 })
 
-const user = mongoose.model('user', userSchema)
+const User = mongoose.model('User', userSchema)
 
-module.exports = user;
+module.exports = User;

@@ -1,5 +1,6 @@
 const Appointment = require('../models/appointment_model')
 const Service = require('../models/service_model')
+const User = require('../models/user_model')
 
 exports.service_create = async (req, res) => {
   const service = new Service({
@@ -8,13 +9,15 @@ exports.service_create = async (req, res) => {
   })
   try {
     await service.save()
+    const user = await User.findById(req.user._id)
+    await user.services.push(service._id)
     res.status(201).send(service)
   } catch (e) {
     res.status(400).send(e)
   }
 }
 
-exports.service_read = async (req, res) => {
+exports.service_get = async (req, res) => {
   const _id = req.params.id;
   try {
     // Questionable
@@ -24,9 +27,11 @@ exports.service_read = async (req, res) => {
     }
     res.send(service)
   } catch (e) {
-    res.status(400).send()
+    res.status(500).send()
   }
 }
+
+// If a employee discontinues or changes a service, I don't want them to remove the already planed services from appointments
 
 exports.service_patch = async (req, res) => {
   const updates = Object.keys(req.body);
@@ -64,8 +69,11 @@ exports.service_delete = async (req, res) => {
     if (!service) {
       return res.status(404).send()
     }
-    // delete appointments with same service?
-    // await Appointment.deleteMany({service: req.params.id})
+    const user = await User.findById(req.user._id)
+    const foundService = user.services.indexOf(req.params.id)
+    if (foundService >= 0) {
+      user.services.pull(req.params.id)
+    }
     res.status(200).send()
   } catch (e) {
     res.status(500).send()

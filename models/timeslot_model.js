@@ -2,7 +2,6 @@ const mongoose = require('mongoose')
 
 const timeslotSchema = new mongoose.Schema(
   {
-    title: String,
     slotTime: String,
     slotDate: String,
     createdAt: Date,
@@ -10,6 +9,15 @@ const timeslotSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       required: true,
       ref: 'User'
+    },
+    employee: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      ref: 'User'
+    },
+    appointment: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Appointment'
     }
   }
 )

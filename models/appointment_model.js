@@ -17,11 +17,11 @@ const appointmentSchema = new mongoose.Schema(
       required: true, 
       ref: 'User'
     },
-    store: {
-      type: mongoose.Schema.Types.ObjectId, 
-      required: true,
-      ref: 'Store',
-    },
+    // store: {
+    //   type: mongoose.Schema.Types.ObjectId, 
+    //   required: true,
+    //   ref: 'Store',
+    // },
     employee: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,

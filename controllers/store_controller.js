@@ -1,5 +1,6 @@
 const Store = require('../models/store_model')
 const sharp = require('sharp')
+const User = require('../models/user_model')
 
 exports.store_create = async (req, res) => {
   const buffer = await sharp(req.file.buffer).resize({width: 500, height: 500 }).png().toBuffer()
@@ -7,7 +8,7 @@ exports.store_create = async (req, res) => {
   const store = new Store({
     ...req.body,
     picture: buffer,
-    owner: req.user._id,
+    owners: req.user._id,
   })
   try {
     await store.save();
@@ -34,6 +35,7 @@ exports.store_get_single = async (req, res) => {
   try {
     const store = await Store.findOne({_id})
       .populate('employees')
+      .populate('owners')
     if (!store) {
       return res.status(404).send()
     }
@@ -75,6 +77,8 @@ exports.store_delete = async (req, res) => {
     if (!store) {
       return res.status(404).send()
     }
+    // Find all users under this store and delete references from them? 
+    // Could just leave it and let the users update as needed
     res.status(200).send()
   } catch (e) {
     res.status(500).send()
