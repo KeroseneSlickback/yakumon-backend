@@ -1,47 +1,34 @@
-- Owner can sign up on the website
-  - Provides store name, store description, locaion, location link, hours broken down by day, and a picture 
-  - Backend saves this
+1. User enters frontend
 
-- Stylists sign up on the website
-  - Provide first and last name, title, username, email, password, store
-    - Then are asked to create their services 
+2. They select a store => backend finds store, pulls employees and owners 
 
-- Services consist of service name, time span in milliseconds collecting into 30min sessions, and price 
+3. They select an employee => backend finds employee, pulls services, appointments, appointment timeslots
 
-- Timeslot are created when either they're created directly in terms of breaks, or in appointments
+4. When they make an appointment:
+  - Create timeslots for time needed for appointment with owner, employee
+  - Create appointment with timeslots, service, owner, employee
+  - Add appointment to timeslots 
+  - Find employee to add that appointment._id to 
+  - 
 
-Routes:
+  Figure out what to hand to backend to make appointment time 
 
-Store:
+Each block on the frontend is in 30min intervals 
+  12:30, 1:00, 1:30
+When a service is selected, the service's timespan has a digit to indicates how many 30min blocks are needed 
+  Cut and color: 3 blocks
+This is decided when employee makes their service 30-3hr long 
 
-- Create store upon login 
-- Read store details, calls users and appointments as well - sorting available 
-- Update store details (auth with owner)
-- Delete store, but spares users, appointments, and services (user deletes those) (auth with owner)
+On the backend, take the taken timeslot blocks and calculate the times based from that.
+  If given 12:30 and 3 blocks => loop from 12:30 X blocks to create seperate time slots at 12:30, 1:00, 1:30 and push those timeslot._id onto an array 
+Take that array and merge it into appointment
 
-User:
 
-- Create user profile 
-- Read user details and available appointments 
-- Update user details (auth)
-- Delete user profile - deletes appointments (which delete timeslots), and services
+To test:
+- Auth 
+- multer + sharp working
+- If store with owner check is working properly 
 
-Services: 
-
-- Create services directed from User (auth)
-- Update services (auth)
-- Delete services (auth)
-
-Appointments: 
-
-- Create appointment
-- Read appointment
-- Update appointment (auth)
-- Delete appointment (auth)
-
-Timeslots: 
-
-- Create
-- Read 
-- Update 
-- Delete from 
+To work out:
+- How to deal with timeslot calculation
+  - Import Moment.js for that? On both ends?
