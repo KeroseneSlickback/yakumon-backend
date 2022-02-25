@@ -1,5 +1,6 @@
 const express = require("express");
 const router = new express.Router();
+const passport = require("passport");
 
 // Controller
 const appointment_controller = require("../controllers/appointment_controller");
@@ -27,3 +28,5 @@ router.delete(
   passport.authenticate("jwt", { session: false }),
   appointment_controller.appointment_delete
 );
+
+module.exports = router;
