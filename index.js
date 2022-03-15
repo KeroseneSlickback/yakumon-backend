@@ -5,8 +5,8 @@ const helmet = require("helmet");
 const logger = require("morgan");
 const passport = require("passport");
 const path = require("path");
-require("./db/mongoose");
 require("dotenv").config({ path: __dirname + "/config/.env" });
+require("./db/mongoose");
 require("./lib/passport")(passport);
 
 const PORT = process.env.PORT || 8888;

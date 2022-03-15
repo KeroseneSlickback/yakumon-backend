@@ -19,23 +19,29 @@ const upload = multer({
   },
 });
 
+// ********
+
+// Create a seperate section where the User/store uploads their photos
+// Patch as well
+
+// ********
+
 // user Post
 
-router.post("/", upload.single("picture"), user_controller.user_create);
+router.post("/", user_controller.user_create);
 
 router.post("/login", user_controller.user_login);
 
 router.get("/:id", user_controller.user_get);
 
 router.patch(
-  "/:id",
+  "/",
   passport.authenticate("jwt", { session: false }),
-  upload.single("picture"),
   user_controller.user_patch
 );
 
 router.delete(
-  "/:id",
+  "/",
   passport.authenticate("jwt", { session: false }),
   user_controller.user_delete
 );
