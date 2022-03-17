@@ -3,14 +3,9 @@ const sharp = require("sharp");
 const User = require("../models/user_model");
 
 exports.store_create = async (req, res) => {
-  const buffer = await sharp(req.file.buffer)
-    .resize({ width: 500, height: 500 })
-    .png()
-    .toBuffer();
-  // issue with picture in the new Store body?
+  // Create a new route to add photo to document
   const store = new Store({
     ...req.body,
-    picture: buffer,
     owners: req.user._id,
   });
   try {

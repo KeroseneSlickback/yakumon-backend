@@ -22,7 +22,6 @@ const upload = multer({
 router.post(
   "/",
   passport.authenticate("jwt", { session: false }),
-  upload.single("picture"),
   store_controller.store_create
 );
 
@@ -33,7 +32,6 @@ router.get("/:id/", store_controller.store_get_single);
 router.patch(
   "/:id",
   passport.authenticate("jwt", { session: false }),
-  upload.single("picture"),
   store_controller.store_patch
 );
 
