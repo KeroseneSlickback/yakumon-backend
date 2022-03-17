@@ -1,3 +1,5 @@
+- Employee validation route
+- Validation for employee in services
 - Seperate user patch call for image
 - Seperate store patch call for image
 

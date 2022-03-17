@@ -11,11 +11,11 @@ router.post(
   service_controller.service_create
 );
 
-router.get(
-  "/",
-  passport.authenticate("jwt", { session: false }),
-  service_controller.service_get
-);
+// router.get(
+//   "/:id",
+//   passport.authenticate("jwt", { session: false }),
+//   service_controller.service_get
+// );
 
 router.patch(
   "/:id",
