@@ -3,7 +3,9 @@ const sharp = require("sharp");
 const User = require("../models/user_model");
 
 exports.store_create = async (req, res) => {
-  // Create a new route to add photo to document
+  if (!req.user.storeOwner) {
+    return res.status(401).send();
+  }
   const store = new Store({
     ...req.body,
     owners: req.user._id,
@@ -43,10 +45,6 @@ exports.store_get_single = async (req, res) => {
 };
 
 exports.store_patch = async (req, res) => {
-  const buffer = await sharp(req.file.buffer)
-    .resize({ width: 500, height: 500 })
-    .png()
-    .toBuffer();
   const updates = Object.keys(req.body);
   const allowedUpdates = [
     "storeName",
@@ -55,7 +53,6 @@ exports.store_patch = async (req, res) => {
     "location",
     "locationLink",
     "hours",
-    "picture",
   ];
   const isValidOperation = updates.every((update) => {
     return allowedUpdates.includes(update);
@@ -68,13 +65,12 @@ exports.store_patch = async (req, res) => {
     if (!store) {
       return res.status(404).send();
     }
-    if (store.owners.indexOf(req.user._id) >= 0) {
+    if (store.owners.indexOf(req.user._id) < 0) {
       return res.status(401).send();
     }
     updates.forEach((update) => {
       store[update] = req.body[update];
     });
-    store.picture = buffer;
     await store.save();
     res.send(store);
   } catch (e) {
@@ -83,19 +79,20 @@ exports.store_patch = async (req, res) => {
 };
 
 exports.store_delete = async (req, res) => {
+  console.log(req.user);
   try {
-    const store = await Store.findOneAndDelete({
-      _id: req.params.id,
-      owner: req.user._id,
-    });
+    if (!req.user.storeOwner) {
+      return res.status(401).send();
+    }
+    const store = await Store.findOne({ _id: req.params.id });
     if (!store) {
       return res.status(404).send();
     }
-    if (store.owners.indexOf(req.user._id) >= 0) {
+    if (store.owners.indexOf(req.user._id) < 0) {
       return res.status(401).send();
     }
-    // Find all users under this store and delete references from them?
-    // Could just leave it and let the users update as needed
+    console.log(store);
+    // await Store.deleteOne({ _id: store._id });
     res.status(200).send();
   } catch (e) {
     res.status(500).send();

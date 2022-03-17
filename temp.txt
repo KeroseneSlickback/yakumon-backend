@@ -1,0 +1,5 @@
+- Seperate user patch call for image
+- Seperate store patch call for image
+
+- Seperate call from admin to set store owner
+- 

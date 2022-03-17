@@ -42,6 +42,7 @@ exports.user_create = [
     const newUser = new User({
       ...req.body,
       admin: false,
+      storeOwner: false,
     });
     try {
       const user = await newUser.save();
