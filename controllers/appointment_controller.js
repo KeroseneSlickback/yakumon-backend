@@ -1,7 +1,7 @@
 const Appointment = require("../models/appointment_model");
 const Timeslot = require("../models/timeslot_model");
 const User = require("../models/user_model");
-const { add } = require("date-fns");
+const { add, parseISO } = require("date-fns");
 const Service = require("../models/service_model");
 
 /**
@@ -32,30 +32,33 @@ exports.appointment_post = async (req, res) => {
   */
 
   try {
+    // Find the required data from the request body
     const serviceID = req.body.service;
-    const service = Service.findOne({ serviceID });
+    const service = await Service.findOne({ serviceID });
     const { employee, slotDateTime, createdAt } = req.body;
-    let timeSlots = [];
 
-    for (let i = 0; i <= service.timeSpan; i++) {
-      // let calculatedTime = slotTime + (i *= 30);
-
-      // Calculate based on whatever NPM module used
-
-      let calculatedDateTime = add(slotDateTime, { minutes: (i *= 30) });
-
-      const newTimeSlot = await new Timeslot({
-        slotDateTime: calculatedDateTime,
-        createdAt,
-        owner: req.user._id,
-        employee,
-      });
-      await newTimeSlot.save();
-      timeSlots.push(newTimeSlot._id);
-    }
-
+    // Timeslot array for building the needed slots for the appointment document
+    const calculateTimeSlots = async () => {
+      let slotsArray = [];
+      for (let i = 0; i <= service.timeSpan; i++) {
+        // let calculatedTime = slotTime + (i *= 30);
+        let calculatedDateTime = add(parseISO(slotDateTime), {
+          minutes: (i *= 30),
+        });
+        const newTimeSlot = await new Timeslot({
+          slotDateTime: calculatedDateTime,
+          createdAt,
+          owner: req.user._id,
+          employee,
+        });
+        await newTimeSlot.save();
+        slotsArray.push(newTimeSlot._id);
+      }
+      return slotsArray;
+    };
+    const timeSlots = await calculateTimeSlots();
     // Might need to merge timeSlots onto appointment? Does mongoose take an array?
-    const appointment = new Appointment({
+    const appointment = await new Appointment({
       timeSlots,
       service: service._id,
       owner: req.user._id,
@@ -63,15 +66,15 @@ exports.appointment_post = async (req, res) => {
     });
     await appointment.save();
 
-    for (i of timeSlots) {
-      const foundTimeslot = await Timeslot.findById(i);
-      foundTimeslot.appointment.push(appointment._id);
-      foundTimeslot.save();
-    }
+    // for (i of timeSlots) {
+    //   const foundTimeslot = await Timeslot.findById(i);
+    //   foundTimeslot.appointment.push(appointment._id);
+    //   foundTimeslot.save();
+    // }
 
-    const foundEmployee = await User.findById(employee);
-    await foundEmployee.appointments.push(appointment);
-    await foundEmployee.save();
+    // const foundEmployee = await User.findById(employee);
+    // await foundEmployee.appointments.push(appointment);
+    // await foundEmployee.save();
 
     res.status(201).send(appointment);
   } catch (e) {
