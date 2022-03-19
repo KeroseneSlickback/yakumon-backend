@@ -21,21 +21,11 @@ const Service = require("../models/service_model");
  */
 
 exports.appointment_post = async (req, res) => {
-  /*
-    Send current time, schedule time, service _id, employee, and user (given by passportJS)
-
-    Pull service for the amount of time slots given
-    Start loop
-      for each service's timeSpan #, increment schedule date by 30mins
-      create and save timeslots
-
-  */
-
   try {
     // Find the required data from the request body
     const serviceID = req.body.service;
     const service = await Service.findOne({ serviceID });
-    const { employee, slotDateTime, createdAt } = req.body;
+    const { employee, customer, slotDateTime, createdAt } = req.body;
 
     // Timeslot array for building the needed slots for the appointment document
     const calculateTimeSlots = async () => {
@@ -48,7 +38,7 @@ exports.appointment_post = async (req, res) => {
         const newTimeSlot = await new Timeslot({
           slotDateTime: calculatedDateTime,
           createdAt,
-          owner: req.user._id,
+          owner: customer ? customer : req.user._id,
           employee,
         });
         await newTimeSlot.save();
@@ -56,12 +46,13 @@ exports.appointment_post = async (req, res) => {
       }
       return slotsArray;
     };
+
     const timeSlots = await calculateTimeSlots();
-    // Might need to merge timeSlots onto appointment? Does mongoose take an array?
+
     const appointment = await new Appointment({
       timeSlots,
       service: service._id,
-      owner: req.user._id,
+      owner: customer ? customer : req.user._id,
       employee,
     });
     await appointment.save();
