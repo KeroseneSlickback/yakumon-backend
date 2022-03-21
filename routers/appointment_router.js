@@ -12,19 +12,19 @@ router.post(
 );
 
 router.get(
-  "/id",
+  "/:id",
   passport.authenticate("jwt", { session: false }),
   appointment_controller.appointment_get
 );
 
 router.patch(
-  "/id",
+  "/:id",
   passport.authenticate("jwt", { session: false }),
   appointment_controller.appointment_patch
 );
 
 router.delete(
-  "/id",
+  "/:id",
   passport.authenticate("jwt", { session: false }),
   appointment_controller.appointment_delete
 );

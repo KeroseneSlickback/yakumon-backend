@@ -6,7 +6,7 @@ const appointmentSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       required: true,
       ref: "Timeslot",
-      unique: true,
+      // unique: true,
     },
   ],
   service: {
