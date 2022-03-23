@@ -5,3 +5,5 @@
 
 - Seperate call from admin to set store owner
 - 
+
+- What should happen when an employee creates or patches a customer's appointment?

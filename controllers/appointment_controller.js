@@ -20,6 +20,31 @@ const Service = require("../models/service_model");
   But what about if employee makes an appointment for the user?
  */
 
+const createTimeSlotsFromService = async (
+  service,
+  serviceID,
+  slotDateTime,
+  createdAt,
+  employee,
+  customer
+) => {
+  let slotsArray = [];
+  for (let i = 0; i <= service.timeSpan; i++) {
+    let calculatedDateTime = add(parseISO(slotDateTime), {
+      minutes: (i *= 30),
+    });
+    const newTimeSlot = await new Timeslot({
+      slotDateTime: calculatedDateTime,
+      createdAt,
+      owner: customer ? customer : req.user._id,
+      employee,
+    });
+    await newTimeSlot.save();
+    slotsArray.push(newTimeSlot._id);
+  }
+  return slotsArray;
+};
+
 exports.appointment_post = async (req, res) => {
   try {
     // Find the required data from the request body
@@ -27,26 +52,17 @@ exports.appointment_post = async (req, res) => {
     const service = await Service.findOne({ serviceID });
     const { employee, customer, slotDateTime, createdAt } = req.body;
 
-    // Timeslot array for building the needed slots for the appointment document
-    const calculateTimeSlots = async () => {
-      let slotsArray = [];
-      for (let i = 0; i <= service.timeSpan; i++) {
-        let calculatedDateTime = add(parseISO(slotDateTime), {
-          minutes: (i *= 30),
-        });
-        const newTimeSlot = await new Timeslot({
-          slotDateTime: calculatedDateTime,
-          createdAt,
-          owner: customer ? customer : req.user._id,
-          employee,
-        });
-        await newTimeSlot.save();
-        slotsArray.push(newTimeSlot._id);
-      }
-      return slotsArray;
-    };
+    // Check for if employee already has those time slots?
 
-    const timeSlots = await calculateTimeSlots();
+    // Timeslot array for building the needed slots for the appointment document
+    const timeSlots = await createTimeSlotsFromService(
+      service,
+      serviceID,
+      slotDateTime,
+      createdAt,
+      employee,
+      customer
+    );
 
     const appointment = await new Appointment({
       timeSlots,
@@ -92,9 +108,33 @@ exports.appointment_get = async (req, res) => {
   }
 };
 
+/*
+
+For patch:
+
+- accept:
+  employee
+  service
+  slotDateTime
+  alteredAt (createdAt)
+  customer
+
+- Pull appointment
+- Follow automatic updates for employee, owner (customer), and service
+- If service
+- Pull timeslots
+  - Compare timeslot time
+    - Replace if different
+- 
+
+  Saving patching service for later to lessen front-end complication
+  Regligated to enforcing a new appointment
+
+*/
+
 exports.appointment_patch = async (req, res) => {
   const updates = Object.keys(req.body);
-  const allowedUpdates = ["slotTime", "slotDate", "service"];
+  const allowedUpdates = ["slotDateTime", "createdAt"];
   const isValidOperation = updates.every((update) => {
     return allowedUpdates.includes(update);
   });
@@ -102,52 +142,41 @@ exports.appointment_patch = async (req, res) => {
     return res.status(400).send({ error: "Invalide updates" });
   }
   try {
-    const currentTime = Date.now();
-    const { owner, employee, service, slotTime, slotDate, timeSpan } = req.body;
+    const { slotDateTime, createdAt } = req.body;
 
     const appointment = await Appointment.findOne({
       _id: req.params.id,
-      employee: req.user._id,
     })
       .populate("timeSlots")
       .populate("service");
+
     if (!appointment) {
       return res.status(404).send();
     }
 
     if (
-      appointment.timeSlots[0].slotTime !== slotTime ||
-      appointment.timeSlots[0].slotDate !== slotDate
+      appointment.timeSlots[0].slotDateTime > parseISO(slotDateTime) ||
+      appointment.timeSlots[0].slotDateTime < parseISO(slotDateTime)
     ) {
-      await Timeslot.deleteMany({ appointment: appointment._id });
-
-      let timeSlots = [];
-
-      for (let i = 1; i <= timeSpan; i++) {
-        let calculatedTime;
-        // Calculate based on whatever NPM module used
-        calculatedTime = slotTime + (i *= 30);
-
-        const newTimeSlot = await new Timeslot({
-          slotTime: calculatedTime,
-          slotDate,
-          createdAt: currentTime,
-          owner,
-          employee,
-        });
-        await newTimeSlot.save();
-        timeSlots.push(newTimeSlot._id);
-      }
-
-      // Does this work?
+      const serviceID = appointment.service._id;
+      const service = await Service.findOne({ serviceID });
+      const employee = appointment.employee;
+      const customer = appointment.owner;
+      await Timeslot.deleteMany({ appointment: req.params.id });
+      const timeSlots = await createTimeSlotsFromService(
+        service,
+        serviceID,
+        slotDateTime,
+        createdAt,
+        employee,
+        customer
+      );
       appointment.timeSlots = timeSlots;
+      appointment.save();
+    } else {
+      res.status(400).send({ error: "Nothing to update" });
+      console.log("they match!");
     }
-
-    if (appointment.service !== service) {
-      appointment.service = service;
-    }
-
-    await appointment.save();
     res.send(appointment);
   } catch (e) {
     res.status(400).send(e);

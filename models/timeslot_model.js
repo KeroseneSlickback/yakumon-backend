@@ -4,7 +4,6 @@ const timeslotSchema = new mongoose.Schema({
   slotDateTime: {
     type: Date,
     required: true,
-    unique: true,
   },
   createdAt: Date,
   owner: {
