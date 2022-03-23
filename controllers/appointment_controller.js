@@ -185,13 +185,17 @@ exports.appointment_patch = async (req, res) => {
 
 exports.appointment_delete = async (req, res) => {
   try {
-    const appointment = await Appointment.findOneAndDelete({
-      _id: req.params.id,
-    });
+    const appointment = await Appointment.findOne({ _id: req.params.id });
     if (!appointment) {
       return res.status(404).send();
     }
-    await Timeslot.deleteMany({ appointment: req.params.id });
+    const employeeID = appointment.employee;
+    await User.findOneAndUpdate(
+      { _id: employeeID },
+      { $pull: { appointments: appointment._id } }
+    );
+    await Timeslot.deleteMany({ appointment: appointment._id });
+    await Appointment.deleteOne({ _id: req.params.id });
     res.status(200).send();
   } catch (e) {
     res.status(500).send(e);
