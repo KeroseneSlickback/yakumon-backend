@@ -186,11 +186,23 @@ exports.user_storeOwnerAuth = async (req, res) => {
     if (!admin.admin) {
       return res.status(401).send();
     }
-    const storeOwnerID = req.params.id;
-    const foundStoreOwner = await User.findOne({ _id: storeOwnerID });
-    if (foundStoreOwner) {
-      foundStoreOwner.storeOwner = !foundStoreOwner.storeOwner;
-      await foundStoreOwner.save();
+    const { storeOwner, store, setAsOwner } = req.body;
+    const foundStoreOwner = await User.findOne({ _id: storeOwner });
+    const foundStore = await Store.findOne({ _id: store });
+    if (foundStoreOwner || foundStore) {
+      if (setAsOwner) {
+        foundStoreOwner.storeOwner = true;
+        foundStoreOwner.store = foundStore._id;
+        foundStore.owners.push(foundStoreOwner._id);
+        await foundStoreOwner.save();
+        await foundStore.save();
+      } else {
+        foundStoreOwner.storeOwner = false;
+        foundStoreOwner.store = undefined;
+        foundStore.owners.pull(foundStoreOwner._id);
+        await foundStoreOwner.save();
+        await foundStore.save();
+      }
     } else {
       res.status(401).send();
     }
@@ -206,7 +218,7 @@ exports.user_employeeAuth = async (req, res) => {
     if (!storeOwner.storeOwner) {
       return res.status(401).send();
     }
-    const employeeId = req.params.id;
+    const employeeId = req.body.employee;
     const foundEmployee = await User.findOne({ _id: employeeId });
     if (foundEmployee) {
       foundEmployee.employee = !foundEmployee.employee;

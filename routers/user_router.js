@@ -47,13 +47,13 @@ router.delete(
 );
 
 router.patch(
-  "/ownerauthenticate/:id",
+  "/ownerauthenticate",
   passport.authenticate("jwt", { session: false }),
   user_controller.user_storeOwnerAuth
 );
 
 router.patch(
-  "/employeeauthenticate/:id",
+  "/employeeauthenticate",
   passport.authenticate("jwt", { session: false }),
   user_controller.user_employeeAuth
 );

@@ -2,5 +2,14 @@
 - Make a PATCH route to make users store owners for admin
 - The same for store owners to make users employees 
 
+- If storeOwner: 
+- Find store and add owner ID on 
+- Sent store ID to owner 
+
+- Save for employee
+
+- Create a getAll users get request
+
 - Image uploads
 
+- Test user path
