@@ -46,6 +46,18 @@ router.delete(
   user_controller.user_delete
 );
 
+router.patch(
+  "/ownerauthenticate/:id",
+  passport.authenticate("jwt", { session: false }),
+  user_controller.user_storeOwnerAuth
+);
+
+router.patch(
+  "/employeeauthenticate/:id",
+  passport.authenticate("jwt", { session: false }),
+  user_controller.user_employeeAuth
+);
+
 module.exports = router;
 
 // auth, and admin?

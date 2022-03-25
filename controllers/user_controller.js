@@ -179,3 +179,43 @@ exports.user_delete = async (req, res) => {
     req.status(500).send();
   }
 };
+
+exports.user_storeOwnerAuth = async (req, res) => {
+  try {
+    const admin = await User.findOne({ _id: req.user._id });
+    if (!admin.admin) {
+      return res.status(401).send();
+    }
+    const storeOwnerID = req.params.id;
+    const foundStoreOwner = await User.findOne({ _id: storeOwnerID });
+    if (foundStoreOwner) {
+      foundStoreOwner.storeOwner = !foundStoreOwner.storeOwner;
+      await foundStoreOwner.save();
+    } else {
+      res.status(401).send();
+    }
+    res.send(foundStoreOwner);
+  } catch (e) {
+    res.status(400).send(e);
+  }
+};
+
+exports.user_employeeAuth = async (req, res) => {
+  try {
+    const storeOwner = await User.findOne({ _id: req.user._id });
+    if (!storeOwner.storeOwner) {
+      return res.status(401).send();
+    }
+    const employeeId = req.params.id;
+    const foundEmployee = await User.findOne({ _id: employeeId });
+    if (foundEmployee) {
+      foundEmployee.employee = !foundEmployee.employee;
+      await foundEmployee.save();
+    } else {
+      res.status(401).send();
+    }
+    res.send(foundEmployee);
+  } catch (e) {
+    res.status(400).send(e);
+  }
+};

@@ -4,25 +4,8 @@ const User = require("../models/user_model");
 const { add, parseISO } = require("date-fns");
 const Service = require("../models/service_model");
 
-/**
-  
-  req.user._id given by passport for customer
-  req.body object: 
-  {
-    owner: explicitly given because either customer or employee,
-    employee: given employee ID from selection,
-    service: given service ID from selection,
-    slotTime: the given start time of service,
-    slotDate: the given date from frontend,
-    timeSpan: given number of blocks based from service's timeSpan,
-  }
-
-  But what about if employee makes an appointment for the user?
- */
-
 const createTimeSlotsFromService = async (
   service,
-  serviceID,
   slotDateTime,
   createdAt,
   employee,
@@ -57,7 +40,6 @@ exports.appointment_post = async (req, res) => {
     // Timeslot array for building the needed slots for the appointment document
     const timeSlots = await createTimeSlotsFromService(
       service,
-      serviceID,
       slotDateTime,
       createdAt,
       employee,
@@ -108,30 +90,6 @@ exports.appointment_get = async (req, res) => {
   }
 };
 
-/*
-
-For patch:
-
-- accept:
-  employee
-  service
-  slotDateTime
-  alteredAt (createdAt)
-  customer
-
-- Pull appointment
-- Follow automatic updates for employee, owner (customer), and service
-- If service
-- Pull timeslots
-  - Compare timeslot time
-    - Replace if different
-- 
-
-  Saving patching service for later to lessen front-end complication
-  Regligated to enforcing a new appointment
-
-*/
-
 exports.appointment_patch = async (req, res) => {
   const updates = Object.keys(req.body);
   const allowedUpdates = ["slotDateTime", "createdAt"];
@@ -165,7 +123,6 @@ exports.appointment_patch = async (req, res) => {
       await Timeslot.deleteMany({ appointment: req.params.id });
       const timeSlots = await createTimeSlotsFromService(
         service,
-        serviceID,
         slotDateTime,
         createdAt,
         employee,

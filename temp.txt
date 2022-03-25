@@ -1,9 +1,6 @@
-- Employee validation route
-- Validation for employee in services
-- Seperate user patch call for image
-- Seperate store patch call for image
 
-- Seperate call from admin to set store owner
-- 
+- Make a PATCH route to make users store owners for admin
+- The same for store owners to make users employees 
 
-- What should happen when an employee creates or patches a customer's appointment?
+- Image uploads
+
