@@ -19,18 +19,13 @@ const upload = multer({
   },
 });
 
-// ********
-
-// Create a seperate section where the User/store uploads their photos
-// Patch as well
-
-// ********
-
 // user Post
 
 router.post("/", user_controller.user_create);
 
 router.post("/login", user_controller.user_login);
+
+router.get("/all", user_controller.user_get_all);
 
 router.get("/:id", user_controller.user_get);
 
@@ -56,6 +51,13 @@ router.patch(
   "/employeeauthenticate",
   passport.authenticate("jwt", { session: false }),
   user_controller.user_employeeAuth
+);
+
+router.patch(
+  "/picture",
+  passport.authenticate("jwt", { session: false }),
+  upload.single("picture"),
+  user_controller.user_picture_upload
 );
 
 module.exports = router;

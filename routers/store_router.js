@@ -41,6 +41,13 @@ router.delete(
   store_controller.store_delete
 );
 
+router.patch(
+  "/:id/picture",
+  passport.authenticate("jwt", { session: false }),
+  upload.single("picture"),
+  store_controller.store_picture_upload
+);
+
 module.exports = router;
 
 // auth, and admin?

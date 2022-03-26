@@ -1,11 +1,8 @@
 const User = require("../models/user_model");
 const { body, validationResult } = require("express-validator");
 const utils = require("../lib/utils");
-const sharp = require("sharp");
-const Appointment = require("../models/appointment_model");
-const Service = require("../models/service_model");
-const Timeslot = require("../models/timeslot_model");
 const Store = require("../models/store_model");
+const sharp = require("sharp");
 
 exports.user_create = [
   body("username", "Username must not be empty")
@@ -31,7 +28,6 @@ exports.user_create = [
   body("firstName", "First name").trim().isLength({ min: 1 }),
   body("lastName", "Last name").trim().isLength({ min: 1 }),
   body("title", "User title").optional().trim(),
-  body("store", "Store link").optional().trim(),
   body("phoneNumber", "Phone Number").trim(),
   async (req, res, next) => {
     const errors = validationResult(req);
@@ -92,6 +88,15 @@ exports.user_login = async (req, res) => {
   }
 };
 
+exports.user_get_all = async (req, res) => {
+  try {
+    const users = await User.find({});
+    res.send(users);
+  } catch (e) {
+    res.status(400).send(e);
+  }
+};
+
 exports.user_get = async (req, res) => {
   const _id = req.params.id;
   try {
@@ -118,8 +123,8 @@ exports.user_patch = async (req, res) => {
     "title",
     "username",
     "email",
+    "phoneNumber",
     "password",
-    "store",
   ];
   const isValidOperation = updates.every((update) => {
     return allowedUpdates.includes(update);
@@ -133,18 +138,6 @@ exports.user_patch = async (req, res) => {
     });
     if (!user) {
       return res.status(404).send();
-    }
-    // Haven't tested changing stores yet
-    if (req.body.store && user.store._id !== req.body.store) {
-      const oldStore = await Store.findById(user.store._id);
-      const newStore = await Store.findById(req.body.store);
-      const foundUser = oldStore.employees.indexOf(user._id);
-      if (foundUser >= 0) {
-        oldStore.employees.pull(user._id);
-        newStore.employees.push(user._id);
-        await oldStore.save();
-        await oldStore.save();
-      }
     }
     updates.forEach((update) => {
       user[update] = req.body[update];
@@ -218,15 +211,41 @@ exports.user_employeeAuth = async (req, res) => {
     if (!storeOwner.storeOwner) {
       return res.status(401).send();
     }
-    const employeeId = req.body.employee;
-    const foundEmployee = await User.findOne({ _id: employeeId });
-    if (foundEmployee) {
-      foundEmployee.employee = !foundEmployee.employee;
-      await foundEmployee.save();
+    const { employee, store, setAsEmployee } = req.body;
+    const foundEmployee = await User.findOne({ _id: employee });
+    const foundStore = await Store.findOne({ _id: store });
+    if (foundEmployee || foundStore) {
+      if (setAsEmployee) {
+        foundEmployee.employee = true;
+        foundEmployee.store = foundStore._id;
+        foundStore.employees.push(foundEmployee._id);
+        await foundEmployee.save();
+        await foundStore.save();
+      } else {
+        foundEmployee.employee = false;
+        foundEmployee.store = undefined;
+        foundStore.employees.pull(foundEmployee._id);
+        await foundEmployee.save();
+        await foundStore.save();
+      }
     } else {
       res.status(401).send();
     }
     res.send(foundEmployee);
+  } catch (e) {
+    res.status(400).send(e);
+  }
+};
+
+exports.user_picture_upload = async (req, res) => {
+  try {
+    const buffer = await sharp(req.file.buffer)
+      .resize({ width: 250, height: 250 })
+      .png()
+      .toBuffer();
+    req.user.picture = buffer;
+    await req.user.save();
+    res.send(req.user);
   } catch (e) {
     res.status(400).send(e);
   }

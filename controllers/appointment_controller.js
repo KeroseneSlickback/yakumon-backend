@@ -79,7 +79,6 @@ exports.appointment_get = async (req, res) => {
       .populate("timeSlots")
       .populate("service")
       .populate("owner")
-      // .populate('store')
       .populate("employee");
     if (!appointment) {
       return res.status(404).send();
@@ -132,7 +131,6 @@ exports.appointment_patch = async (req, res) => {
       appointment.save();
     } else {
       res.status(400).send({ error: "Nothing to update" });
-      console.log("they match!");
     }
     res.send(appointment);
   } catch (e) {

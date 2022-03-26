@@ -120,10 +120,11 @@ userSchema.pre("save", async function (next) {
 
 userSchema.pre("remove", async function (next) {
   const user = this;
-  await Appointment.deleteMany({ owner: User._id });
-  await Appointment.deleteMany({ employee: User._id });
-  await Service.deleteMany({ owner: User._id });
-  await Timeslot.deleteMany({ owner: User._id });
+  await Appointment.deleteMany({ owner: user._id });
+  await Appointment.deleteMany({ employee: user._id });
+  await Service.deleteMany({ owner: user._id });
+  await Timeslot.deleteMany({ owner: user._id });
+  await Timeslot.deleteMany({ employee: user._id });
   next();
 });
 

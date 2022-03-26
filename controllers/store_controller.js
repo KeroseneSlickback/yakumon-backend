@@ -1,6 +1,6 @@
 const Store = require("../models/store_model");
 const sharp = require("sharp");
-const User = require("../models/user_model");
+const { ObjectId } = require("mongodb");
 
 exports.store_create = async (req, res) => {
   if (!req.user.storeOwner) {
@@ -96,5 +96,25 @@ exports.store_delete = async (req, res) => {
     res.status(200).send();
   } catch (e) {
     res.status(500).send();
+  }
+};
+
+exports.store_picture_upload = async (req, res) => {
+  try {
+    const buffer = await sharp(req.file.buffer)
+      .resize({ width: 500, height: 500 })
+      .png()
+      .toBuffer();
+    const store = await Store.findOne({
+      _id: req.params.id,
+    });
+    if (store.owners.indexOf(req.user._id) < 0) {
+      return res.status(401).send();
+    }
+    store.picture = buffer;
+    store.save();
+    res.send(store);
+  } catch (e) {
+    res.status(400).send(e);
   }
 };
