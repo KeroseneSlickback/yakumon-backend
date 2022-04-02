@@ -112,7 +112,7 @@ exports.store_picture_upload = async (req, res) => {
       return res.status(401).send();
     }
     store.picture = buffer;
-    store.save();
+    await store.save();
     res.send(store);
   } catch (e) {
     res.status(400).send(e);

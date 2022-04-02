@@ -39,6 +39,7 @@ exports.user_create = [
       ...req.body,
       admin: false,
       storeOwner: false,
+      employee: false,
     });
     try {
       const user = await newUser.save();
@@ -125,6 +126,7 @@ exports.user_patch = async (req, res) => {
     "email",
     "phoneNumber",
     "password",
+    "store",
   ];
   const isValidOperation = updates.every((update) => {
     return allowedUpdates.includes(update);
@@ -138,6 +140,11 @@ exports.user_patch = async (req, res) => {
     });
     if (!user) {
       return res.status(404).send();
+    }
+    if (req.body.store) {
+      const store = await Store.findOne({ _id: req.body.store });
+      store.employees.push(user._id);
+      store.save();
     }
     updates.forEach((update) => {
       user[update] = req.body[update];
