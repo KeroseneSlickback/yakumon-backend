@@ -3,6 +3,7 @@ const { body, validationResult } = require("express-validator");
 const utils = require("../lib/utils");
 const Store = require("../models/store_model");
 const sharp = require("sharp");
+const { use } = require("passport");
 
 exports.user_create = [
   body("username", "Username must not be empty")

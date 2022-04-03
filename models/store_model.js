@@ -17,6 +17,14 @@ const storeSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
+  storeWebsite: {
+    type: String,
+    trim: true,
+  },
+  phoneNumber: {
+    type: String,
+    trim: true,
+  },
   location: {
     type: String,
     required: true,

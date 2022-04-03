@@ -1,6 +1,5 @@
 const Store = require("../models/store_model");
 const sharp = require("sharp");
-const { ObjectId } = require("mongodb");
 
 exports.store_create = async (req, res) => {
   if (!req.user.storeOwner) {
@@ -33,8 +32,8 @@ exports.store_get_single = async (req, res) => {
   const _id = req.params.id;
   try {
     const store = await Store.findOne({ _id })
-      .populate("employees")
-      .populate("owners");
+      .populate("employees", "-password")
+      .populate("owners", "-password");
     if (!store) {
       return res.status(404).send();
     }
@@ -53,6 +52,8 @@ exports.store_patch = async (req, res) => {
     "location",
     "locationLink",
     "hours",
+    "storeWebsite",
+    "phoneNumber",
   ];
   const isValidOperation = updates.every((update) => {
     return allowedUpdates.includes(update);
