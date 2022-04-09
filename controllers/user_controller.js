@@ -107,7 +107,8 @@ exports.user_get = async (req, res) => {
         path: "appointments",
         populate: { path: "timeSlots" },
       })
-      .populate("services");
+      .populate("services")
+      .populate("store");
     if (!user) {
       return res.status(404).send();
     }

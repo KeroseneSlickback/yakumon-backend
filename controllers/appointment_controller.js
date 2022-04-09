@@ -33,7 +33,7 @@ exports.appointment_post = async (req, res) => {
     // Find the required data from the request body
     const serviceID = req.body.service;
     const service = await Service.findOne({ serviceID });
-    const { employee, customer, slotDateTime, createdAt } = req.body;
+    const { employee, customer, slotDateTime, createdAt, comments } = req.body;
 
     // Check for if employee already has those time slots?
 
@@ -51,6 +51,7 @@ exports.appointment_post = async (req, res) => {
       service: service._id,
       owner: customer ? customer : req.user._id,
       employee,
+      comments,
     });
     await appointment.save();
 

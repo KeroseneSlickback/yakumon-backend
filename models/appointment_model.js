@@ -29,6 +29,10 @@ const appointmentSchema = new mongoose.Schema({
     required: true,
     ref: "User",
   },
+  comments: {
+    type: String,
+    trim: true,
+  },
 });
 
 const Appointment = mongoose.model("Appointment", appointmentSchema);
