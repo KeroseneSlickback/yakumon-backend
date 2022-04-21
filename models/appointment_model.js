@@ -33,6 +33,9 @@ const appointmentSchema = new mongoose.Schema({
     type: String,
     trim: true,
   },
+  timeOff: {
+    type: Boolean,
+  },
 });
 
 const Appointment = mongoose.model("Appointment", appointmentSchema);

@@ -80,25 +80,28 @@ exports.store_patch = async (req, res) => {
 };
 
 exports.store_delete = async (req, res) => {
-  console.log(req.user);
   try {
     if (!req.user.storeOwner) {
       return res.status(401).send();
     }
-    const store = await Store.findOne({ _id: req.params.id });
+    const store = await Store.findOne({
+      _id: req.params.id,
+    });
     if (!store) {
       return res.status(404).send();
     }
     if (store.owners.indexOf(req.user._id) < 0) {
       return res.status(401).send();
     }
-    console.log(store);
-    // await Store.deleteOne({ _id: store._id });
-    res.status(200).send();
+    await Store.deleteOne({ _id: store._id });
+    req.user.store = null;
+    await req.user.save();
+    res.status(200).send(store);
   } catch (e) {
     res.status(500).send();
   }
 };
+// multiple users?
 
 exports.store_picture_upload = async (req, res) => {
   try {

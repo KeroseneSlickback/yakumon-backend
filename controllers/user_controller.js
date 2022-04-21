@@ -160,25 +160,29 @@ exports.user_patch = async (req, res) => {
 
 exports.user_delete = async (req, res) => {
   try {
-    // Already in pre method, right?
-    // await Appointment.deleteMany({owner: req.user._id})
-    // await Service.deleteMany({owner: req.user._id})
-    // await Timeslot.deleteMany({owner: req.user._id})
     const user = await User.findOne({ _id: req.user._id });
-    console.log(user.store);
-    // Store hasn't been tested yet
     if (user.store) {
-      const store = await Store.findById({ employees: req.user._id });
-      const foundUser = store.employees.indexOf(req.user._id);
+      const store = await Store.findById(user.store);
+      const foundUser = await store.employees.indexOf(req.user._id);
       if (foundUser >= 0) {
         store.employees.pull(req.user._id);
-        await store.save();
+        // await store.save();
+      }
+    }
+    if (user.storeOwner) {
+      const store = await Store.findOne({
+        employees: { $elemMatch: { $eq: user._id } },
+      });
+      if (store.owners.length > 1) {
+        store.owners.pull(req.user._id);
+      } else {
+        await Store.deleteOne(store._id);
       }
     }
     await req.user.remove();
     res.send(req.user);
   } catch (e) {
-    req.status(500).send();
+    res.status(500).send();
   }
 };
 
@@ -190,23 +194,37 @@ exports.user_storeOwnerAuth = async (req, res) => {
     }
     const { storeOwner, store, setAsOwner } = req.body;
     const foundStoreOwner = await User.findOne({ _id: storeOwner });
-    const foundStore = await Store.findOne({ _id: store });
-    if (foundStoreOwner || foundStore) {
-      if (setAsOwner) {
-        foundStoreOwner.storeOwner = true;
-        foundStoreOwner.store = foundStore._id;
-        foundStore.owners.push(foundStoreOwner._id);
-        await foundStoreOwner.save();
-        await foundStore.save();
+    if (!store) {
+      if (foundStoreOwner) {
+        if (setAsOwner) {
+          foundStoreOwner.storeOwner = true;
+          await foundStoreOwner.save();
+        } else {
+          foundStoreOwner.storeOwner = false;
+          await foundStoreOwner.save();
+        }
       } else {
-        foundStoreOwner.storeOwner = false;
-        foundStoreOwner.store = undefined;
-        foundStore.owners.pull(foundStoreOwner._id);
-        await foundStoreOwner.save();
-        await foundStore.save();
+        return res.status(401).send();
       }
     } else {
-      res.status(401).send();
+      const foundStore = await Store.findOne({ _id: store });
+      if (foundStore) {
+        if (setAsOwner) {
+          foundStoreOwner.storeOwner = true;
+          foundStoreOwner.store = foundStore._id;
+          foundStore.owners.push(foundStoreOwner._id);
+          await foundStoreOwner.save();
+          await foundStore.save();
+        } else {
+          foundStoreOwner.storeOwner = false;
+          foundStoreOwner.store = undefined;
+          foundStore.owners.pull(foundStoreOwner._id);
+          await foundStoreOwner.save();
+          await foundStore.save();
+        }
+      } else {
+        res.status(401).send();
+      }
     }
     res.send(foundStoreOwner);
   } catch (e) {
@@ -228,6 +246,7 @@ exports.user_employeeAuth = async (req, res) => {
         foundEmployee.employee = true;
         foundEmployee.store = foundStore._id;
         foundStore.employees.push(foundEmployee._id);
+        console.log("HERE?");
         await foundEmployee.save();
         await foundStore.save();
       } else {
@@ -242,6 +261,7 @@ exports.user_employeeAuth = async (req, res) => {
     }
     res.send(foundEmployee);
   } catch (e) {
+    console.log(e);
     res.status(400).send(e);
   }
 };

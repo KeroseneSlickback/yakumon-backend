@@ -37,9 +37,9 @@ const storeSchema = new mongoose.Schema({
   },
   hours: [
     {
-      day: String,
       open: String,
       close: String,
+      closed: Boolean,
     },
   ],
   picture: {

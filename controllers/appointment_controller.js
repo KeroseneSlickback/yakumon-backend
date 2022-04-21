@@ -33,7 +33,8 @@ exports.appointment_post = async (req, res) => {
     // Find the required data from the request body
     const serviceID = req.body.service;
     const service = await Service.findOne({ serviceID });
-    const { employee, customer, slotDateTime, createdAt, comments } = req.body;
+    const { employee, customer, slotDateTime, createdAt, comments, timeOff } =
+      req.body;
 
     // Check for if employee already has those time slots?
 
@@ -43,7 +44,8 @@ exports.appointment_post = async (req, res) => {
       slotDateTime,
       createdAt,
       employee,
-      customer
+      customer,
+      timeOff
     );
 
     const appointment = await new Appointment({
