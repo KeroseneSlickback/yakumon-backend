@@ -101,7 +101,6 @@ exports.store_delete = async (req, res) => {
     res.status(500).send();
   }
 };
-// multiple users?
 
 exports.store_picture_upload = async (req, res) => {
   try {

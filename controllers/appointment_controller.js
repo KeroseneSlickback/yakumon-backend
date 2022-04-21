@@ -1,8 +1,13 @@
 const Appointment = require("../models/appointment_model");
 const Timeslot = require("../models/timeslot_model");
 const User = require("../models/user_model");
-const { add, parseISO } = require("date-fns");
+const { add, parseISO, addMinutes } = require("date-fns");
 const Service = require("../models/service_model");
+
+// date-fns didn't like running in a loop more than twice, had to make it a dedicated async/await function to force it
+const addMinutesToDateTime = async (time, step) => {
+  return addMinutes(time, (step *= 30));
+};
 
 const createTimeSlotsFromService = async (
   service,
@@ -12,10 +17,9 @@ const createTimeSlotsFromService = async (
   customer
 ) => {
   let slotsArray = [];
-  for (let i = 0; i <= service.timeSpan; i++) {
-    let calculatedDateTime = add(parseISO(slotDateTime), {
-      minutes: (i *= 30),
-    });
+  for (let i = 0; i < service.timeSpan; i++) {
+    let parsedDateTime = parseISO(slotDateTime);
+    let calculatedDateTime = await addMinutesToDateTime(parsedDateTime, i);
     const newTimeSlot = await new Timeslot({
       slotDateTime: calculatedDateTime,
       createdAt,
@@ -32,9 +36,8 @@ exports.appointment_post = async (req, res) => {
   try {
     // Find the required data from the request body
     const serviceID = req.body.service;
-    const service = await Service.findOne({ serviceID });
-    const { employee, customer, slotDateTime, createdAt, comments, timeOff } =
-      req.body;
+    const service = await Service.findById(serviceID);
+    const { employee, customer, slotDateTime, createdAt, comments } = req.body;
 
     // Check for if employee already has those time slots?
 
@@ -44,8 +47,7 @@ exports.appointment_post = async (req, res) => {
       slotDateTime,
       createdAt,
       employee,
-      customer,
-      timeOff
+      customer
     );
 
     const appointment = await new Appointment({
