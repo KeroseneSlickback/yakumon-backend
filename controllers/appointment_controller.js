@@ -121,7 +121,7 @@ exports.appointment_patch = async (req, res) => {
       appointment.timeSlots[0].slotDateTime < parseISO(slotDateTime)
     ) {
       const serviceID = appointment.service._id;
-      const service = await Service.findOne({ serviceID });
+      const service = await Service.findById(serviceID);
       const employee = appointment.employee;
       const customer = appointment.owner;
       await Timeslot.deleteMany({ appointment: req.params.id });
@@ -133,7 +133,13 @@ exports.appointment_patch = async (req, res) => {
         customer
       );
       appointment.timeSlots = timeSlots;
-      appointment.save();
+      await appointment.save();
+
+      for (i of timeSlots) {
+        const foundTimeslot = await Timeslot.findById(i);
+        foundTimeslot.appointment = appointment._id;
+        await foundTimeslot.save();
+      }
     } else {
       res.status(400).send({ error: "Nothing to update" });
     }
