@@ -1,5 +1,6 @@
 const Store = require("../models/store_model");
 const sharp = require("sharp");
+const User = require("../models/user_model");
 
 exports.store_create = async (req, res) => {
   if (!req.user.storeOwner) {
@@ -9,8 +10,13 @@ exports.store_create = async (req, res) => {
     ...req.body,
     owners: req.user._id,
   });
+  const _id = req.user.id;
+  const user = await User.findOne({ _id });
+  console.log(user);
   try {
     await store.save();
+    user.ownedStores.push(store._id);
+    await user.save();
     res.status(201).send(store);
   } catch (e) {
     res.status(400).send(e);
@@ -93,6 +99,10 @@ exports.store_delete = async (req, res) => {
     if (store.owners.indexOf(req.user._id) < 0) {
       return res.status(401).send();
     }
+    await User.findOneAndUpdate(
+      { _id: req.user.id },
+      { $pull: { ownedStores: store._id } }
+    );
     await Store.deleteOne({ _id: store._id });
     req.user.store = null;
     await req.user.save();

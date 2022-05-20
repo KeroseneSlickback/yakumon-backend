@@ -73,6 +73,7 @@ const userSchema = new mongoose.Schema({
   employee: {
     type: Boolean,
   },
+  ownedStores: [{ type: mongoose.Schema.Types.ObjectId, ref: "Store" }],
 });
 
 userSchema.methods.toJSON = function () {
