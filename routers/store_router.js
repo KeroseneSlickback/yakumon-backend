@@ -49,5 +49,3 @@ router.patch(
 );
 
 module.exports = router;
-
-// auth, and admin?

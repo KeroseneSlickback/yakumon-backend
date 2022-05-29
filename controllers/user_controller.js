@@ -109,10 +109,11 @@ exports.user_get = async (req, res) => {
       })
       .populate("services")
       .populate("store")
-      .populate("ownedStores");
+      .populate({ path: "ownedStores", populate: { path: "employees" } });
     if (!user) {
       return res.status(404).send();
     }
+    console.log(user.ownedStores[0]);
     res.send(user.toJSON());
   } catch (e) {
     res.status(400).send(e);
