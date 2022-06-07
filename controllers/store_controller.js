@@ -104,8 +104,8 @@ exports.store_delete = async (req, res) => {
       { $pull: { ownedStores: store._id } }
     );
     await Store.deleteOne({ _id: store._id });
-    req.user.store = null;
-    await req.user.save();
+    // req.user.store = null;
+    // await req.user.save();
     res.status(200).send(store);
   } catch (e) {
     res.status(500).send();

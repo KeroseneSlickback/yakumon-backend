@@ -79,6 +79,7 @@ exports.appointment_post = async (req, res) => {
 
 exports.appointment_get = async (req, res) => {
   const _id = req.params.id;
+  console.log(_id);
   try {
     const appointment = await Appointment.findOne({ _id })
       .populate("timeSlots")
