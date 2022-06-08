@@ -84,8 +84,8 @@ exports.appointment_get = async (req, res) => {
     const appointment = await Appointment.findOne({ _id })
       .populate("timeSlots")
       .populate("service")
-      .populate("owner")
-      .populate("employee");
+      .populate("owner", "-password")
+      .populate("employee", "-password");
     if (!appointment) {
       return res.status(404).send();
     }

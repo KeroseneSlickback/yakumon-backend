@@ -64,11 +64,13 @@ exports.user_create = [
 ];
 
 exports.user_login = async (req, res) => {
+  console.log(req.body);
   try {
     const user = await User.findByCredentials(
       req.body.username,
       req.body.password
     );
+    console.log(user);
     if (!user) {
       res.status(401).json({ success: false, msg: "Could not log in" });
     }
