@@ -64,13 +64,11 @@ exports.user_create = [
 ];
 
 exports.user_login = async (req, res) => {
-  console.log(req.body);
   try {
     const user = await User.findByCredentials(
       req.body.username,
       req.body.password
     );
-    console.log(user);
     if (!user) {
       res.status(401).json({ success: false, msg: "Could not log in" });
     }
@@ -115,7 +113,6 @@ exports.user_get = async (req, res) => {
     if (!user) {
       return res.status(404).send();
     }
-    console.log(user.ownedStores[0]);
     res.send(user.toJSON());
   } catch (e) {
     res.status(400).send(e);
@@ -247,16 +244,21 @@ exports.user_employeeAuth = async (req, res) => {
     const foundStore = await Store.findOne({ _id: store });
     if (foundEmployee || foundStore) {
       if (setAsEmployee) {
+        if (foundEmployee.store) {
+          return res.status(401).send();
+        }
         foundEmployee.employee = true;
         foundEmployee.store = foundStore._id;
         foundStore.employees.push(foundEmployee._id);
-        console.log("HERE?");
         await foundEmployee.save();
         await foundStore.save();
       } else {
         foundEmployee.employee = false;
         foundEmployee.store = undefined;
-        foundStore.employees.pull(foundEmployee._id);
+        const employeeIndex = foundStore.employees.indexOf(foundEmployee._id);
+        if (employeeIndex >= -1) {
+          foundStore.employees.splice(employeeIndex, 1);
+        }
         await foundEmployee.save();
         await foundStore.save();
       }
