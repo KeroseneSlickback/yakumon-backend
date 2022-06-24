@@ -120,12 +120,15 @@ exports.appointment_patch = async (req, res) => {
       appointment.timeSlots[0].slotDateTime,
       parseISO(slotDateTime)
     );
-    console.log(dateComparison);
+    let commentCheck = comments === appointment.comments;
+    console.log(commentCheck);
 
-    if (dateComparison === 0) {
-      console.log("failed?");
-      return res.status(400).send({ error: "Start dates are the same" });
-    } else if (dateComparison < 0 || dateComparison > 0) {
+    if (!commentCheck) {
+      appointment.comments = comments;
+      await appointment.save();
+    }
+
+    if (dateComparison < 0 || dateComparison > 0) {
       const serviceID = appointment.service._id;
       const service = await Service.findById(serviceID);
       const employee = appointment.employee;
@@ -146,11 +149,6 @@ exports.appointment_patch = async (req, res) => {
         foundTimeslot.appointment = appointment._id;
         await foundTimeslot.save();
       }
-    } else if (comments) {
-      appointment.comments = comments;
-      await appointment.save();
-    } else {
-      return res.status(400).send({ error: "Nothing to update" });
     }
     res.send(appointment);
   } catch (e) {
