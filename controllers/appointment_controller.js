@@ -113,7 +113,7 @@ exports.appointment_patch = async (req, res) => {
       .populate("service");
 
     if (!appointment) {
-      return res.status(404).send();
+      return res.status(404).send({ error: "No appointment found" });
     }
 
     let dateComparison = compareAsc(
@@ -150,6 +150,10 @@ exports.appointment_patch = async (req, res) => {
         await foundTimeslot.save();
       }
     }
+
+    if (commentCheck && dateComparison === 0) {
+      return res.status(400).send({ error: "Nothing to update" });
+    }
     res.send(appointment);
   } catch (e) {
     res.status(400).send("Error editing appointment");
@@ -160,7 +164,7 @@ exports.appointment_delete = async (req, res) => {
   try {
     const appointment = await Appointment.findOne({ _id: req.params.id });
     if (!appointment) {
-      return res.status(404).send();
+      return res.status(404).send({ error: "No appointment found" });
     }
     const employeeID = appointment.employee;
     await User.findOneAndUpdate(

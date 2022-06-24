@@ -93,7 +93,22 @@ exports.user_login = async (req, res) => {
 exports.user_get_all = async (req, res) => {
   try {
     const users = await User.find({});
-    res.send(users);
+    const scrubbedUsers = users.map((user) => {
+      return {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        _id: user._id,
+        appointments: user.appointments,
+        username: user.username,
+        title: user.title,
+        phoneNumber: user.phoneNumber,
+        storeOwner: user.storeOwner,
+        admin: user.admin,
+        employee: user.employee,
+        store: user.store,
+      };
+    });
+    res.send(scrubbedUsers);
   } catch (e) {
     res.status(400).send(e);
   }
