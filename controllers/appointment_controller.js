@@ -1,7 +1,7 @@
 const Appointment = require("../models/appointment_model");
 const Timeslot = require("../models/timeslot_model");
 const User = require("../models/user_model");
-const { add, parseISO, addMinutes } = require("date-fns");
+const { add, parseISO, addMinutes, compareAsc } = require("date-fns");
 const Service = require("../models/service_model");
 
 // date-fns didn't like running in a loop more than twice, had to make it a dedicated async/await function to force it
@@ -79,13 +79,12 @@ exports.appointment_post = async (req, res) => {
 
 exports.appointment_get = async (req, res) => {
   const _id = req.params.id;
-  console.log(_id);
   try {
     const appointment = await Appointment.findOne({ _id })
       .populate("timeSlots")
       .populate("service")
       .populate("owner", "-password")
-      .populate("employee", "-password");
+      .populate({ path: "employee", populate: { path: "store" } });
     if (!appointment) {
       return res.status(404).send();
     }
@@ -97,7 +96,7 @@ exports.appointment_get = async (req, res) => {
 
 exports.appointment_patch = async (req, res) => {
   const updates = Object.keys(req.body);
-  const allowedUpdates = ["slotDateTime", "createdAt"];
+  const allowedUpdates = ["slotDateTime", "createdAt", "comments"];
   const isValidOperation = updates.every((update) => {
     return allowedUpdates.includes(update);
   });
@@ -105,7 +104,7 @@ exports.appointment_patch = async (req, res) => {
     return res.status(400).send({ error: "Invalide updates" });
   }
   try {
-    const { slotDateTime, createdAt } = req.body;
+    const { slotDateTime, createdAt, comments } = req.body;
 
     const appointment = await Appointment.findOne({
       _id: req.params.id,
@@ -117,10 +116,16 @@ exports.appointment_patch = async (req, res) => {
       return res.status(404).send();
     }
 
-    if (
-      appointment.timeSlots[0].slotDateTime > parseISO(slotDateTime) ||
-      appointment.timeSlots[0].slotDateTime < parseISO(slotDateTime)
-    ) {
+    let dateComparison = compareAsc(
+      appointment.timeSlots[0].slotDateTime,
+      parseISO(slotDateTime)
+    );
+    console.log(dateComparison);
+
+    if (dateComparison === 0) {
+      console.log("failed?");
+      return res.status(400).send({ error: "Start dates are the same" });
+    } else if (dateComparison < 0 || dateComparison > 0) {
       const serviceID = appointment.service._id;
       const service = await Service.findById(serviceID);
       const employee = appointment.employee;
@@ -141,12 +146,15 @@ exports.appointment_patch = async (req, res) => {
         foundTimeslot.appointment = appointment._id;
         await foundTimeslot.save();
       }
+    } else if (comments) {
+      appointment.comments = comments;
+      await appointment.save();
     } else {
-      res.status(400).send({ error: "Nothing to update" });
+      return res.status(400).send({ error: "Nothing to update" });
     }
     res.send(appointment);
   } catch (e) {
-    res.status(400).send(e);
+    res.status(400).send("Error editing appointment");
   }
 };
 
