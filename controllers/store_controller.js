@@ -4,7 +4,7 @@ const User = require("../models/user_model");
 
 exports.store_create = async (req, res) => {
   if (!req.user.storeOwner) {
-    return res.status(401).send();
+    return res.status(401).send({ error: "User not authorized" });
   }
   const store = new Store({
     ...req.body,
@@ -19,7 +19,7 @@ exports.store_create = async (req, res) => {
     await user.save();
     res.status(201).send(store);
   } catch (e) {
-    res.status(400).send(e);
+    res.status(400).send({ error: "Error creating store" });
   }
 };
 
@@ -41,11 +41,11 @@ exports.store_get_single = async (req, res) => {
       .populate("employees", "-password")
       .populate("owners", "-password");
     if (!store) {
-      return res.status(404).send();
+      return res.status(404).send({ error: "Error finding store" });
     }
     res.send(store);
   } catch (e) {
-    res.status(400).send(e);
+    res.status(400).send({ error: "Error finding store" });
   }
 };
 
@@ -88,16 +88,16 @@ exports.store_patch = async (req, res) => {
 exports.store_delete = async (req, res) => {
   try {
     if (!req.user.storeOwner) {
-      return res.status(401).send();
+      return res.status(401).send({ error: "User is not authorized" });
     }
     const store = await Store.findOne({
       _id: req.params.id,
     });
     if (!store) {
-      return res.status(404).send();
+      return res.status(404).send({ error: "Store not found" });
     }
     if (store.owners.indexOf(req.user._id) < 0) {
-      return res.status(401).send();
+      return res.status(401).send({ error: "Store owner not found" });
     }
     await User.findOneAndUpdate(
       { _id: req.user.id },
@@ -108,7 +108,7 @@ exports.store_delete = async (req, res) => {
     // await req.user.save();
     res.status(200).send(store);
   } catch (e) {
-    res.status(500).send();
+    res.status(500).send({ error: "Error deleting store" });
   }
 };
 
@@ -122,12 +122,12 @@ exports.store_picture_upload = async (req, res) => {
       _id: req.params.id,
     });
     if (store.owners.indexOf(req.user._id) < 0) {
-      return res.status(401).send();
+      return res.status(401).send({ error: "User is not authorized" });
     }
     store.picture = buffer;
     await store.save();
     res.send(store);
   } catch (e) {
-    res.status(400).send(e);
+    res.status(400).send({ error: "Error uploading picture" });
   }
 };

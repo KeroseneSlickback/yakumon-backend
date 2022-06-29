@@ -14,25 +14,9 @@ exports.service_create = async (req, res) => {
     await user.save();
     res.status(201).send(service);
   } catch (e) {
-    res.status(400).send(e);
+    res.status(400).send({ error: "Error creating service" });
   }
 };
-
-// exports.service_get = async (req, res) => {
-//   const _id = req.params.id;
-//   try {
-//     // Questionable
-//     const service = await Service.findOne({ _id, owner: req.user._id });
-//     if (!service) {
-//       return res.status(404).send();
-//     }
-//     res.send(service);
-//   } catch (e) {
-//     res.status(500).send();
-//   }
-// };
-
-// If a employee discontinues or changes a service, I don't want them to remove the already planed services from appointments
 
 exports.service_patch = async (req, res) => {
   const updates = Object.keys(req.body);
@@ -57,7 +41,7 @@ exports.service_patch = async (req, res) => {
     await service.save();
     res.send(service);
   } catch (e) {
-    res.status(400).send(e);
+    res.status(400).send({ error: "Error patching service" });
   }
 };
 
@@ -77,6 +61,6 @@ exports.service_delete = async (req, res) => {
     }
     res.status(200).send();
   } catch (e) {
-    res.status(500).send();
+    res.status(500).send({ error: "" });
   }
 };

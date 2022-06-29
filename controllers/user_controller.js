@@ -70,7 +70,7 @@ exports.user_login = async (req, res) => {
       req.body.password
     );
     if (!user) {
-      res.status(401).json({ success: false, msg: "Could not log in" });
+      return res.status(401).json({ success: false, msg: "Error logging in" });
     }
     if (user) {
       const jwt = await utils.issueJWT(user);
@@ -80,7 +80,7 @@ exports.user_login = async (req, res) => {
         token: jwt.token,
       });
     } else {
-      res.status(401).json({
+      return (401).json({
         success: false,
         msg: "You entered the wrong user infomation",
       });
@@ -110,7 +110,7 @@ exports.user_get_all = async (req, res) => {
     });
     res.send(scrubbedUsers);
   } catch (e) {
-    res.status(400).send(e);
+    res.status(400).send({ error: "Users cannot be found" });
   }
 };
 
@@ -126,7 +126,7 @@ exports.user_get = async (req, res) => {
       .populate("store")
       .populate({ path: "ownedStores", populate: { path: "employees" } });
     if (!user) {
-      return res.status(404).send();
+      return res.status(404).send({ error: "User cannot be found" });
     }
     res.send(user.toJSON());
   } catch (e) {
@@ -170,7 +170,7 @@ exports.user_patch = async (req, res) => {
     await user.save();
     res.send(req.user);
   } catch (e) {
-    res.status(400).send(e);
+    res.status(400).send({ error: "Error editting user" });
   }
 };
 
@@ -198,7 +198,7 @@ exports.user_delete = async (req, res) => {
     await req.user.remove();
     res.send(req.user);
   } catch (e) {
-    res.status(500).send();
+    res.status(500).send({ error: "Error deleting user" });
   }
 };
 
@@ -206,7 +206,7 @@ exports.user_storeOwnerAuth = async (req, res) => {
   try {
     const admin = await User.findOne({ _id: req.user._id });
     if (!admin.admin) {
-      return res.status(401).send();
+      return res.status(401).send({ error: "User cannot be found" });
     }
     const { storeOwner, store, setAsOwner } = req.body;
     const foundStoreOwner = await User.findOne({ _id: storeOwner });
@@ -220,7 +220,7 @@ exports.user_storeOwnerAuth = async (req, res) => {
           await foundStoreOwner.save();
         }
       } else {
-        return res.status(401).send();
+        return res.status(401).send({ error: "No store owner found" });
       }
     } else {
       const foundStore = await Store.findOne({ _id: store });
@@ -239,12 +239,12 @@ exports.user_storeOwnerAuth = async (req, res) => {
           await foundStore.save();
         }
       } else {
-        res.status(401).send();
+        return res.status(401).send({ error: "No store owner found" });
       }
     }
     res.send(foundStoreOwner);
   } catch (e) {
-    res.status(400).send(e);
+    res.status(400).send({ error: "Error making user a store owner" });
   }
 };
 
@@ -252,7 +252,7 @@ exports.user_employeeAuth = async (req, res) => {
   try {
     const storeOwner = await User.findOne({ _id: req.user._id });
     if (!storeOwner.storeOwner) {
-      return res.status(401).send();
+      return res.status(401).send({ error: "Not authorized as store owner" });
     }
     const { employee, store, setAsEmployee } = req.body;
     const foundEmployee = await User.findOne({ _id: employee });
@@ -260,7 +260,9 @@ exports.user_employeeAuth = async (req, res) => {
     if (foundEmployee || foundStore) {
       if (setAsEmployee) {
         if (foundEmployee.store) {
-          return res.status(401).send();
+          return res
+            .status(401)
+            .send({ error: "User is already asigned to a store" });
         }
         foundEmployee.employee = true;
         foundEmployee.store = foundStore._id;
@@ -278,12 +280,12 @@ exports.user_employeeAuth = async (req, res) => {
         await foundStore.save();
       }
     } else {
-      res.status(401).send();
+      return res.status(401).send({ error: "Error assigning user to store" });
     }
     res.send(foundEmployee);
   } catch (e) {
     console.log(e);
-    res.status(400).send(e);
+    res.status(400).send({ error: "Error assigning user to store" });
   }
 };
 
@@ -297,6 +299,6 @@ exports.user_picture_upload = async (req, res) => {
     await req.user.save();
     res.send(req.user);
   } catch (e) {
-    res.status(400).send(e);
+    res.status(400).send({ error: "Error uploading picture" });
   }
 };

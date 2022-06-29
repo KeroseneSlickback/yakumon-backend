@@ -73,7 +73,7 @@ exports.appointment_post = async (req, res) => {
 
     res.status(201).send(appointment);
   } catch (e) {
-    res.status(400).send(e);
+    res.status(400).send({ error: "Error making appointment" });
   }
 };
 
@@ -86,11 +86,11 @@ exports.appointment_get = async (req, res) => {
       .populate("owner", "-password")
       .populate({ path: "employee", populate: { path: "store" } });
     if (!appointment) {
-      return res.status(404).send();
+      return res.status(404).send({ error: "No appointment found" });
     }
     res.send(appointment);
   } catch (e) {
-    res.status(500).send(e);
+    res.status(500).send({ error: "Error finding appointment" });
   }
 };
 
@@ -175,6 +175,6 @@ exports.appointment_delete = async (req, res) => {
     await Appointment.deleteOne({ _id: req.params.id });
     res.status(200).send();
   } catch (e) {
-    res.status(500).send(e);
+    res.status(500).send({ error: "Error deleting appointment" });
   }
 };
