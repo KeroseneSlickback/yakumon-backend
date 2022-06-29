@@ -57,7 +57,6 @@ exports.user_create = [
         token: jwt.token,
       });
     } catch (e) {
-      console.log(e);
       res.status(400).send(e);
     }
   },
@@ -86,7 +85,7 @@ exports.user_login = async (req, res) => {
       });
     }
   } catch (e) {
-    res.status(400).send(e);
+    res.status(400).send({ error: "Error logging in" });
   }
 };
 
@@ -130,7 +129,7 @@ exports.user_get = async (req, res) => {
     }
     res.send(user.toJSON());
   } catch (e) {
-    res.status(400).send(e);
+    res.status(400).send({ error: "Error finding user" });
   }
 };
 
