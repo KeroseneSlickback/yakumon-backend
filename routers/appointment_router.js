@@ -29,16 +29,4 @@ router.delete(
   appointment_controller.appointment_delete
 );
 
-router.post(
-  "/timeoff",
-  passport.authenticate("jwt", { session: false }),
-  appointment_controller.timeoff_create
-);
-
-router.delete(
-  "/timeoff",
-  passport.authenticate("jwt", { session: false }),
-  appointment_controller.timeoff_create
-);
-
 module.exports = router;

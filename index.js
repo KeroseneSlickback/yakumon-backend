@@ -16,6 +16,7 @@ const user_router = require("./routers/user_router");
 const store_router = require("./routers/store_router");
 const service_router = require("./routers/service_router");
 const appointment_router = require("./routers/appointment_router");
+const timeoff_router = require("./routers/timeoff_router");
 
 // Global middleware here
 
@@ -35,6 +36,7 @@ app.use("/store", store_router);
 app.use("/user", user_router);
 app.use("/service", service_router);
 app.use("/appointment", appointment_router);
+app.use("/timeoff", timeoff_router);
 
 app.get("*", (req, res) => {
   res.status(404).json({ message: "Resource not found" });

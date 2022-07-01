@@ -32,22 +32,6 @@ const createTimeSlotsFromService = async (
   return slotsArray;
 };
 
-const createTimeSlotsFromArray = async (array, employee, createdAt) => {
-  let slotsArray = [];
-  for (let i = 0; i < array.length; i++) {
-    const newTimeSlot = await new Timeslot({
-      slotDateTime: array[i].time,
-      createdAt,
-      owner: employee,
-      employee,
-      timeOff: true,
-    });
-    await newTimeSlot.save();
-    slotsArray.push(newTimeSlot._id);
-  }
-  return slotsArray;
-};
-
 exports.appointment_post = async (req, res) => {
   try {
     const serviceID = req.body.service;
@@ -185,44 +169,5 @@ exports.appointment_delete = async (req, res) => {
     res.status(200).send();
   } catch (e) {
     res.status(500).send({ error: "Error deleting appointment" });
-  }
-};
-
-exports.timeoff_create = async (req, res) => {
-  try {
-    const foundEmployee = await User.findById(req.user._id);
-    const timeSlots = await createTimeSlotsFromArray(
-      req.body.timeoff,
-      foundEmployee._id,
-      req.body.createdAt
-    );
-
-    const appointment = await new Appointment({
-      timeSlots,
-      owner: foundEmployee._id,
-      employee: foundEmployee._id,
-      timeOff: true,
-    });
-    await appointment.save();
-
-    for (i of timeSlots) {
-      const foundTimeslot = await Timeslot.findById(i);
-      foundTimeslot.appointment = appointment._id;
-      await foundTimeslot.save();
-    }
-
-    await foundEmployee.appointments.push(appointment);
-    await foundEmployee.save();
-
-    res.send(appointment);
-  } catch (e) {
-    res.status(500).send({ error: "Error creating time off" });
-  }
-};
-
-exports.timeoff_remove = async (req, res) => {
-  try {
-  } catch (e) {
-    res.status(500).send({ error: "Error deleting time off" });
   }
 };
