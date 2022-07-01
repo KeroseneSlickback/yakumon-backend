@@ -11,7 +11,7 @@ const appointmentSchema = new mongoose.Schema({
   ],
   service: {
     type: mongoose.Schema.Types.ObjectId,
-    required: true,
+    // required: true,
     ref: "Service",
   },
   owner: {

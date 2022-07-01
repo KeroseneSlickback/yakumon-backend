@@ -20,6 +20,9 @@ const timeslotSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Appointment",
   },
+  timeOff: {
+    type: Boolean,
+  },
 });
 
 const Timeslot = mongoose.model("Timeslot", timeslotSchema);

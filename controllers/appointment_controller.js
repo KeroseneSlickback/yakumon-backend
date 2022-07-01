@@ -1,7 +1,7 @@
 const Appointment = require("../models/appointment_model");
 const Timeslot = require("../models/timeslot_model");
 const User = require("../models/user_model");
-const { add, parseISO, addMinutes, compareAsc } = require("date-fns");
+const { parseISO, addMinutes, compareAsc } = require("date-fns");
 const Service = require("../models/service_model");
 
 // date-fns didn't like running in a loop more than twice, had to make it a dedicated async/await function to force it
@@ -32,16 +32,28 @@ const createTimeSlotsFromService = async (
   return slotsArray;
 };
 
+const createTimeSlotsFromArray = async (array, employee, createdAt) => {
+  let slotsArray = [];
+  for (let i = 0; i < array.length; i++) {
+    const newTimeSlot = await new Timeslot({
+      slotDateTime: array[i].time,
+      createdAt,
+      owner: employee,
+      employee,
+      timeOff: true,
+    });
+    await newTimeSlot.save();
+    slotsArray.push(newTimeSlot._id);
+  }
+  return slotsArray;
+};
+
 exports.appointment_post = async (req, res) => {
   try {
-    // Find the required data from the request body
     const serviceID = req.body.service;
     const service = await Service.findById(serviceID);
     const { employee, customer, slotDateTime, createdAt, comments } = req.body;
 
-    // Check for if employee already has those time slots?
-
-    // Timeslot array for building the needed slots for the appointment document
     const timeSlots = await createTimeSlotsFromService(
       service,
       slotDateTime,
@@ -59,14 +71,12 @@ exports.appointment_post = async (req, res) => {
     });
     await appointment.save();
 
-    // takes all timeslots and adds the appointment id to them
     for (i of timeSlots) {
       const foundTimeslot = await Timeslot.findById(i);
       foundTimeslot.appointment = appointment._id;
       await foundTimeslot.save();
     }
 
-    // finds employee to add to their appointment array
     const foundEmployee = await User.findById(employee);
     await foundEmployee.appointments.push(appointment);
     await foundEmployee.save();
@@ -121,7 +131,6 @@ exports.appointment_patch = async (req, res) => {
       parseISO(slotDateTime)
     );
     let commentCheck = comments === appointment.comments;
-    console.log(commentCheck);
 
     if (!commentCheck) {
       appointment.comments = comments;
@@ -176,5 +185,44 @@ exports.appointment_delete = async (req, res) => {
     res.status(200).send();
   } catch (e) {
     res.status(500).send({ error: "Error deleting appointment" });
+  }
+};
+
+exports.timeoff_create = async (req, res) => {
+  try {
+    const foundEmployee = await User.findById(req.user._id);
+    const timeSlots = await createTimeSlotsFromArray(
+      req.body.timeoff,
+      foundEmployee._id,
+      req.body.createdAt
+    );
+
+    const appointment = await new Appointment({
+      timeSlots,
+      owner: foundEmployee._id,
+      employee: foundEmployee._id,
+      timeOff: true,
+    });
+    await appointment.save();
+
+    for (i of timeSlots) {
+      const foundTimeslot = await Timeslot.findById(i);
+      foundTimeslot.appointment = appointment._id;
+      await foundTimeslot.save();
+    }
+
+    await foundEmployee.appointments.push(appointment);
+    await foundEmployee.save();
+
+    res.send(appointment);
+  } catch (e) {
+    res.status(500).send({ error: "Error creating time off" });
+  }
+};
+
+exports.timeoff_remove = async (req, res) => {
+  try {
+  } catch (e) {
+    res.status(500).send({ error: "Error deleting time off" });
   }
 };
