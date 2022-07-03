@@ -4,6 +4,9 @@ const utils = require("../lib/utils");
 const Store = require("../models/store_model");
 const sharp = require("sharp");
 const { use } = require("passport");
+const Timeslot = require("../models/timeslot_model");
+const Appointment = require("../models/appointment_model");
+const Service = require("../models/service_model");
 
 exports.user_create = [
   body("username", "Username must not be empty")
@@ -143,7 +146,6 @@ exports.user_patch = async (req, res) => {
     "email",
     "phoneNumber",
     "password",
-    "store",
   ];
   const isValidOperation = updates.every((update) => {
     return allowedUpdates.includes(update);
@@ -178,10 +180,10 @@ exports.user_delete = async (req, res) => {
     const user = await User.findOne({ _id: req.user._id });
     if (user.store) {
       const store = await Store.findById(user.store);
-      const foundUser = await store.employees.indexOf(req.user._id);
-      if (foundUser >= 0) {
-        store.employees.pull(req.user._id);
-        // await store.save();
+      const foundUserIndex = await store.employees.indexOf(req.user._id);
+      if (foundUserIndex >= 0) {
+        store.employees.splice(foundUserIndex, 1);
+        await store.save();
       }
     }
     if (user.storeOwner) {
@@ -189,11 +191,17 @@ exports.user_delete = async (req, res) => {
         employees: { $elemMatch: { $eq: user._id } },
       });
       if (store.owners.length > 1) {
-        store.owners.pull(req.user._id);
+        const foundStoreOwnerIndex = await store.owners.indexOf(user._id);
+        store.owners.splice(foundStoreOwnerIndex, 1);
       } else {
         await Store.deleteOne(store._id);
       }
     }
+    await Timeslot.deleteMany({ owner: user._id });
+    await Timeslot.deleteMany({ employee: user._id });
+    await Appointment.deleteMany({ owner: user._id });
+    await Appointment.deleteMany({ employee: user._id });
+    await Service.deleteMany({ owner: user._id });
     await req.user.remove();
     res.send(req.user);
   } catch (e) {
