@@ -188,12 +188,9 @@ exports.user_delete = async (req, res) => {
     }
     if (user.storeOwner) {
       const store = await Store.findOne({
-        employees: { $elemMatch: { $eq: user._id } },
+        owner: user._id,
       });
-      if (store.owners.length > 1) {
-        const foundStoreOwnerIndex = await store.owners.indexOf(user._id);
-        store.owners.splice(foundStoreOwnerIndex, 1);
-      } else {
+      if (store) {
         await Store.deleteOne(store._id);
       }
     }
@@ -235,13 +232,13 @@ exports.user_storeOwnerAuth = async (req, res) => {
         if (setAsOwner) {
           foundStoreOwner.storeOwner = true;
           foundStoreOwner.store = foundStore._id;
-          foundStore.owners.push(foundStoreOwner._id);
+          foundStore.owner = foundStoreOwner._id;
           await foundStoreOwner.save();
           await foundStore.save();
         } else {
           foundStoreOwner.storeOwner = false;
           foundStoreOwner.store = undefined;
-          foundStore.owners.pull(foundStoreOwner._id);
+          foundStore.owner = foundStoreOwner._id;
           await foundStoreOwner.save();
           await foundStore.save();
         }

@@ -8,7 +8,7 @@ exports.store_create = async (req, res) => {
   }
   const store = new Store({
     ...req.body,
-    owners: req.user._id,
+    owner: req.user._id,
   });
   const _id = req.user.id;
   const user = await User.findOne({ _id });
@@ -39,7 +39,7 @@ exports.store_get_single = async (req, res) => {
   try {
     const store = await Store.findOne({ _id })
       .populate("employees", "-password")
-      .populate("owners", "-password");
+      .populate("owner", "-password");
     if (!store) {
       return res.status(404).send({ error: "Error finding store" });
     }
@@ -72,7 +72,7 @@ exports.store_patch = async (req, res) => {
     if (!store) {
       return res.status(404).send();
     }
-    if (store.owners.indexOf(req.user._id) < 0) {
+    if (store.owner.indexOf(req.user._id) < 0) {
       return res.status(401).send();
     }
     updates.forEach((update) => {
@@ -96,7 +96,7 @@ exports.store_delete = async (req, res) => {
     if (!store) {
       return res.status(404).send({ error: "Store not found" });
     }
-    if (store.owners.indexOf(req.user._id) < 0) {
+    if (store.owner.indexOf(req.user._id) < 0) {
       return res.status(401).send({ error: "Store owner not found" });
     }
     await User.findOneAndUpdate(
@@ -104,8 +104,6 @@ exports.store_delete = async (req, res) => {
       { $pull: { ownedStores: store._id } }
     );
     await Store.deleteOne({ _id: store._id });
-    // req.user.store = null;
-    // await req.user.save();
     res.status(200).send(store);
   } catch (e) {
     res.status(500).send({ error: "Error deleting store" });
@@ -121,7 +119,7 @@ exports.store_picture_upload = async (req, res) => {
     const store = await Store.findOne({
       _id: req.params.id,
     });
-    if (store.owners.indexOf(req.user._id) < 0) {
+    if (store.owner.indexOf(req.user._id) < 0) {
       return res.status(401).send({ error: "User is not authorized" });
     }
     store.picture = buffer;
