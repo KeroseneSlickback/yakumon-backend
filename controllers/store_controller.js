@@ -12,7 +12,6 @@ exports.store_create = async (req, res) => {
   });
   const _id = req.user.id;
   const user = await User.findOne({ _id });
-  console.log(user);
   try {
     await store.save();
     user.ownedStores.push(store._id);
@@ -68,12 +67,12 @@ exports.store_patch = async (req, res) => {
     return res.status(400).send({ error: "Invalid updates!" });
   }
   try {
-    const store = await Store.findOne({ _id: req.params.id });
+    const store = await Store.findOne({
+      _id: req.params.id,
+      owner: req.user._id,
+    });
     if (!store) {
       return res.status(404).send();
-    }
-    if (store.owner.indexOf(req.user._id) < 0) {
-      return res.status(401).send();
     }
     updates.forEach((update) => {
       store[update] = req.body[update];
@@ -92,12 +91,10 @@ exports.store_delete = async (req, res) => {
     }
     const store = await Store.findOne({
       _id: req.params.id,
+      owner: req.user._id,
     });
     if (!store) {
       return res.status(404).send({ error: "Store not found" });
-    }
-    if (store.owner.indexOf(req.user._id) < 0) {
-      return res.status(401).send({ error: "Store owner not found" });
     }
     await User.findOneAndUpdate(
       { _id: req.user.id },
@@ -118,10 +115,8 @@ exports.store_picture_upload = async (req, res) => {
       .toBuffer();
     const store = await Store.findOne({
       _id: req.params.id,
+      owner: req.user._id,
     });
-    if (store.owner.indexOf(req.user._id) < 0) {
-      return res.status(401).send({ error: "User is not authorized" });
-    }
     store.picture = buffer;
     await store.save();
     res.send(store);

@@ -187,12 +187,7 @@ exports.user_delete = async (req, res) => {
       }
     }
     if (user.storeOwner) {
-      const store = await Store.findOne({
-        owner: user._id,
-      });
-      if (store) {
-        await Store.deleteOne(store._id);
-      }
+      await Store.deleteMany({ owner: user._id });
     }
     await Timeslot.deleteMany({ owner: user._id });
     await Timeslot.deleteMany({ employee: user._id });
