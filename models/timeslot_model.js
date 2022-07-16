@@ -23,6 +23,9 @@ const timeslotSchema = new mongoose.Schema({
   timeOff: {
     type: Boolean,
   },
+  blockOrder: {
+    type: Number,
+  },
 });
 
 const Timeslot = mongoose.model("Timeslot", timeslotSchema);

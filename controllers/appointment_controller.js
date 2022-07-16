@@ -25,6 +25,7 @@ const createTimeSlotsFromService = async (
       createdAt,
       owner: customer ? customer : req.user._id,
       employee,
+      blockOrder: i + 1,
     });
     await newTimeSlot.save();
     slotsArray.push(newTimeSlot._id);
