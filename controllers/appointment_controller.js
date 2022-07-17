@@ -63,6 +63,7 @@ exports.appointment_post = async (req, res) => {
     }
 
     const foundEmployee = await User.findById(employee);
+    console.log(foundEmployee);
     await foundEmployee.appointments.push(appointment);
     await foundEmployee.save();
 

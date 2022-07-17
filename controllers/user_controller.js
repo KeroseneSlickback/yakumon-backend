@@ -180,20 +180,27 @@ exports.user_delete = async (req, res) => {
     const user = await User.findOne({ _id: req.user._id });
     if (user.store) {
       const store = await Store.findById(user.store);
-      const foundUserIndex = await store.employees.indexOf(req.user._id);
-      if (foundUserIndex >= 0) {
-        store.employees.splice(foundUserIndex, 1);
-        await store.save();
+      let foundUserIndex;
+      if (store) {
+        foundUserIndex = await store.employees.indexOf(req.user._id);
+        if (foundUserIndex >= 0) {
+          store.employees.splice(foundUserIndex, 1);
+          await store.save();
+        }
       }
     }
     if (user.storeOwner) {
       await Store.deleteMany({ owner: user._id });
     }
-    await Timeslot.deleteMany({ owner: user._id });
-    await Timeslot.deleteMany({ employee: user._id });
-    await Appointment.deleteMany({ owner: user._id });
-    await Appointment.deleteMany({ employee: user._id });
-    await Service.deleteMany({ owner: user._id });
+    if (user.appointments) {
+      await Timeslot.deleteMany({ owner: user._id });
+      await Timeslot.deleteMany({ employee: user._id });
+      await Appointment.deleteMany({ owner: user._id });
+      await Appointment.deleteMany({ employee: user._id });
+    }
+    if (user.services) {
+      await Service.deleteMany({ owner: user._id });
+    }
     await req.user.remove();
     res.send(req.user);
   } catch (e) {

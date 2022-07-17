@@ -100,6 +100,7 @@ exports.store_delete = async (req, res) => {
       { _id: req.user.id },
       { $pull: { ownedStores: store._id } }
     );
+    await User.updateMany({ store: store._id }, { store: undefined });
     await Store.deleteOne({ _id: store._id });
     res.status(200).send(store);
   } catch (e) {

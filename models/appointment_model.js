@@ -6,12 +6,10 @@ const appointmentSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       required: true,
       ref: "Timeslot",
-      // unique: true,
     },
   ],
   service: {
     type: mongoose.Schema.Types.ObjectId,
-    // required: true,
     ref: "Service",
   },
   owner: {

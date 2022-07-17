@@ -5,7 +5,7 @@ const timeslotSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
-  createdAt: Date,
+  createdAt: { type: Date },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
