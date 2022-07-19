@@ -1,11 +1,12 @@
 const mongoose = require("mongoose");
 
 const timeslotSchema = new mongoose.Schema({
+  createdAt: { type: Date },
   slotDateTime: {
     type: Date,
     required: true,
+    index: true,
   },
-  createdAt: { type: Date },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,

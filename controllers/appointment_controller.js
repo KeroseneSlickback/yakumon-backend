@@ -21,8 +21,8 @@ const createTimeSlotsFromService = async (
     let parsedDateTime = parseISO(slotDateTime);
     let calculatedDateTime = await addMinutesToDateTime(parsedDateTime, i);
     const newTimeSlot = await new Timeslot({
-      slotDateTime: calculatedDateTime,
       createdAt,
+      slotDateTime: calculatedDateTime,
       owner: customer ? customer : req.user._id,
       employee,
       blockOrder: i + 1,
@@ -69,6 +69,7 @@ exports.appointment_post = async (req, res) => {
 
     res.status(201).send(appointment);
   } catch (e) {
+    console.log(e);
     res.status(400).send({ error: "Error making appointment" });
   }
 };
