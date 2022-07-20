@@ -1,7 +1,0 @@
-- Figure out how to convert the private and public keys into the .env file
-- Connect them into the application 
-
-- Heroku install and deployment
-- Keys within heroku 
-
-- Mongodb deployment
