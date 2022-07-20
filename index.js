@@ -9,7 +9,7 @@ require("dotenv").config({ path: __dirname + "/config/.env" });
 require("./db/mongoose");
 require("./lib/passport")(passport);
 
-const PORT = process.env.PORT || 8888;
+const PORT = process.env.PORT || 3000;
 
 // Routers here
 const user_router = require("./routers/user_router");
