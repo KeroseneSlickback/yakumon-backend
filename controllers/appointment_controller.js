@@ -63,7 +63,6 @@ exports.appointment_post = async (req, res) => {
     }
 
     const foundEmployee = await User.findById(employee);
-    console.log(foundEmployee);
     await foundEmployee.appointments.push(appointment);
     await foundEmployee.save();
 
@@ -98,7 +97,7 @@ exports.appointment_patch = async (req, res) => {
     return allowedUpdates.includes(update);
   });
   if (!isValidOperation) {
-    return res.status(400).send({ error: "Invalide updates" });
+    return res.status(400).send({ error: "Invalid updates" });
   }
   try {
     const { slotDateTime, createdAt, comments } = req.body;

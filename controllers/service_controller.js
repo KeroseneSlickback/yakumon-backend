@@ -52,15 +52,15 @@ exports.service_delete = async (req, res) => {
       owner: req.user._id,
     });
     if (!service) {
-      return res.status(404).send();
+      return res.status(404).send({ error: "Could not find service" });
     }
-    const user = await User.findById(req.user._id);
-    const foundService = user.services.indexOf(req.params.id);
-    if (foundService >= 0) {
-      user.services.pull(req.params.id);
-    }
+    await User.findOneAndUpdate(
+      { _id: req.user._id },
+      { $pull: { services: req.params.id } }
+    );
+    await Service.deleteOne({ _id: req.params.id });
     res.status(200).send();
   } catch (e) {
-    res.status(500).send({ error: "" });
+    res.status(500).send({ error: "Error deleting service" });
   }
 };

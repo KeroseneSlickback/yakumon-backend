@@ -3,7 +3,6 @@ const { body, validationResult } = require("express-validator");
 const utils = require("../lib/utils");
 const Store = require("../models/store_model");
 const sharp = require("sharp");
-const { use } = require("passport");
 const Timeslot = require("../models/timeslot_model");
 const Appointment = require("../models/appointment_model");
 const Service = require("../models/service_model");
