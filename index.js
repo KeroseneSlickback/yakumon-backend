@@ -31,7 +31,6 @@ app.use(cookieParser());
 app.use(helmet());
 
 // Middleware routes
-// app.use('/users', user.router)
 app.use("/store", store_router);
 app.use("/user", user_router);
 app.use("/service", service_router);
@@ -39,7 +38,7 @@ app.use("/appointment", appointment_router);
 app.use("/timeoff", timeoff_router);
 
 app.get("*", (req, res) => {
-  res.status(404).json({ message: "Resource not found" });
+  res.status(404).json({ error: "Resource not found" });
 });
 
 app.use(function (req, res, next) {
