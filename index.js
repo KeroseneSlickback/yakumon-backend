@@ -38,7 +38,7 @@ app.use("/appointment", appointment_router);
 app.use("/timeoff", timeoff_router);
 
 app.get("*", (req, res) => {
-  res.status(404).json({ error: "Resource not found" });
+  res.status(404).json({ message: "Resource not found" });
 });
 
 app.use(function (req, res, next) {
